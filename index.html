@@ -1,422 +1,503 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F Society</title>
-    <link rel="preload" href="assets/hero-bg.webp" as="image">
-    <link rel="preload" href="assets/noise.webm" as="video">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>F Society — Landing</title>
+<meta name="description" content="F Society — Private community. Terminal-style landing." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='60' font-size='50' text-anchor='middle' fill='%230fb14b' font-family='monospace'>F</text></svg>">
 
-        :root {
-            --bg-black: #000000;
-            --accent-green: #0CFF6A;
-            --warning-red: #8B0000;
-            --layer-1: #1C1C1C;
-            --layer-2: #2B2B2B;
-            --text-light: #F0F0F0;
-        }
+<!-- Optional: web font (fallbacks included) -->
+<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Share Tech Mono', monospace;
-            background: var(--bg-black);
-            color: var(--text-light);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
+<style>
+  /* ------------------------
+     Variables / base
+     ------------------------ */
+  :root{
+    --bg:#040404;
+    --muted:#8a8a8a;
+    --accent-green:#0fb14b;
+    --accent-red:#b71c1c;
+    --glass: rgba(255,255,255,0.03);
+    --mono: 'Inconsolata', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    --max-width:1100px;
+  }
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:#e6e6e6;
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    overflow-x:hidden;
+  }
 
-        /* Hero Section */
-        .hero {
-            position: relative;
-            height: 100vh;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
+  /* ------------------------
+     Layout
+     ------------------------ */
+  .wrap{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:48px 24px;
+    position:relative;
+  }
+  .hero{
+    width:100%;
+    max-width:var(--max-width);
+    position:relative;
+    display:grid;
+    grid-template-columns: 1fr 480px;
+    gap:32px;
+    align-items:center;
+  }
 
-        .hero-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('assets/hero-bg.webp') center/cover no-repeat;
-            z-index: 1;
-        }
+  /* ------------------------
+     Background / Mr Robot silhouette
+     ------------------------ */
+  .scene{
+    position: absolute;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .scene .bg{
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.7)),
+      url('data:image/svg+xml;utf8,\
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">\
+      <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="%23000000"/><stop offset="1" stop-color="%23000000"/></linearGradient></defs>\
+      <rect width="100%" height="100%" fill="%23020202"/>\
+      <!-- stylized hooded silhouette -->\
+      <g transform="translate(300,80) scale(1.6)" fill="%230b0b0b">\
+      <path d="M120 40 C60 50 20 120 40 220 C60 320 10 420 10 520 L350 520 C350 420 300 320 320 220 C340 120 300 50 240 40 Z" fill="%230b0b0b"/>\
+      <ellipse cx="185" cy="220" rx="60" ry="80" fill="%23040404"/>\
+      </g>\
+      </svg>') center/cover no-repeat;
+    filter: contrast(0.9) saturate(0.7) blur(0.2px);
+    transform-origin:center;
+  }
 
-        .hero-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.55);
-            z-index: 2;
-        }
+  /* scanlines (CRT) */
+  .scene::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px);
+    background-size:100% 3px;
+    mix-blend-mode:overlay;
+    pointer-events:none;
+    animation: scan 9s linear infinite;
+    opacity:0.6;
+  }
+  @keyframes scan { to { background-position: 0 1000px; } }
 
-        .hero-content {
-            position: relative;
-            z-index: 3;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 2rem;
-            max-width: 1200px;
-            width: 100%;
-        }
+  /* grain noise */
+  .noise{
+    position:absolute;
+    inset:0;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><filter id="n"><feTurbulence baseFrequency="0.9" stitchTiles="stitch" numOctaves="2" /></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
+    mix-blend-mode:screen;
+    pointer-events:none;
+  }
 
-        .silhouette {
-            width: 300px;
-            height: 400px;
-            background: url('assets/silhouette.png') center/contain no-repeat;
-            margin-bottom: 2rem;
-            filter: drop-shadow(0 0 20px rgba(12, 255, 106, 0.3));
-        }
+  /* focal F Society text overlay */
+  .branding{
+    position:absolute;
+    left:6%;
+    bottom:6%;
+    z-index:1;
+    pointer-events:none;
+    transform:translateZ(0);
+  }
+  .branding .fs{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:96px;
+    line-height:0.9;
+    color:transparent;
+    -webkit-text-stroke:1px rgba(11,11,11,0.9);
+    text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 24px rgba(11,241,75,0.03);
+    mix-blend-mode:normal;
+    letter-spacing:4px;
+  }
+  .fs-sub{
+    font-family:var(--sans);
+    font-size:20px;
+    color:var(--muted);
+    margin-top:6px;
+  }
 
-        .title-container {
-            margin-bottom: 3rem;
-        }
+  /* ------------------------
+     Right column: terminal
+     ------------------------ */
+  .panel{
+    position:relative;
+    z-index:2;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+    border-radius:16px;
+    padding:28px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px) saturate(1.1);
+    border:1px solid rgba(255,255,255,0.03);
+    min-height:260px;
+  }
+  .terminal{
+    font-family:var(--mono);
+    color:var(--accent-green);
+    font-size:18px;
+    background:transparent;
+    overflow:hidden;
+    white-space:pre-wrap;
+    line-height:1.45;
+    position:relative;
+    min-height:150px;
+  }
+  .terminal .cursor{
+    display:inline-block;
+    width:10px;
+    background:var(--accent-green);
+    margin-left:4px;
+    animation:blink 1s steps(2) infinite;
+    vertical-align:bottom;
+  }
+  @keyframes blink { 50%{ opacity:0 } }
 
-        .main-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(64px, 10vw, 120px);
-            font-weight: 900;
-            letter-spacing: 0.1em;
-            color: var(--accent-green);
-            mix-blend-mode: multiply;
-            text-shadow: 
-                0 0 10px #000,
-                0 0 20px #000,
-                0 0 30px var(--accent-green);
-            margin-bottom: 1rem;
-            position: relative;
-        }
+  /* glitch layers for terminal heading */
+  .title{
+    font-family:var(--mono);
+    font-size:28px;
+    color:#e6e6e6;
+    margin-bottom:12px;
+    position:relative;
+    display:inline-block;
+  }
+  .title .tLayer{
+    position:absolute;
+    left:0; top:0;
+    width:100%;
+    height:100%;
+  }
+  .glitch {
+    animation: glitchAnim 6s infinite;
+  }
+  @keyframes glitchAnim {
+    0% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
+    5% { transform: translateX(-2px); opacity:0.95; clip-path: inset(2% 0 70% 0); }
+    6% { transform: translateX(2px); opacity:0.95; clip-path: inset(20% 0 30% 0); }
+    10% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
+    80% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
+    85% { transform: translateX(-1px); opacity:0.96; clip-path: inset(30% 0 10% 0); }
+    88% { transform: translateX(1px); opacity:0.94; clip-path: inset(10% 0 40% 0); }
+    100% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
+  }
 
-        .subtitle {
-            font-size: clamp(18px, 3vw, 24px);
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
-            opacity: 0;
-            animation: slideIn 1s ease-out 2s forwards;
-        }
+  /* copy CTA styled as terminal command */
+  .cmd{
+    margin-top:14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .cmd .box{
+    padding:12px 14px;
+    border-radius:8px;
+    background:linear-gradient(90deg, rgba(0,0,0,0.35), rgba(255,255,255,0.02));
+    font-family:var(--mono);
+    color:var(--accent-green);
+    cursor:pointer;
+    user-select:none;
+    border:1px solid rgba(11,241,75,0.06);
+    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.5);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .cmd .box:focus, .cmd .box:hover{ transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.55); outline:none; }
+  .copied{
+    padding:8px 10px;
+    border-radius:8px;
+    background: rgba(11,241,75,0.08);
+    color:var(--accent-green);
+    font-family:var(--mono);
+    border:1px solid rgba(11,241,75,0.06);
+    display:none;
+  }
+  .copied.show{ display:inline-block; animation:pop .4s ease; }
+  @keyframes pop { from { transform: translateY(6px) scale(.98); opacity:0 } to { transform: translateY(0) scale(1); opacity:1 } }
 
-        .micro-text {
-            font-size: 14px;
-            color: #888;
-            letter-spacing: 0.2em;
-            margin-top: 1rem;
-        }
+  /* small meta text */
+  .meta{ color:var(--muted); font-size:13px; margin-top:10px; }
 
-        /* Terminal */
-        .terminal {
-            background: rgba(28, 28, 28, 0.8);
-            border: 1px solid var(--layer-2);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            max-width: 600px;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
+  /* icons row */
+  .icons{
+    display:flex;
+    gap:12px;
+    margin-top:18px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+  .icon{
+    width:46px; height:46px;
+    display:inline-grid; place-items:center;
+    background: rgba(255,255,255,0.02);
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,0.02);
+    transition:transform .14s ease, box-shadow .14s ease;
+    cursor:default;
+  }
+  .icon:hover{ transform:translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+  .icon svg{ width:26px; height:26px; display:block; }
 
-        .terminal-line {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 1rem;
-        }
+  /* footer tiny text */
+  footer{ position:relative; z-index:2; margin-top:32px; color:var(--muted); font-size:12px; text-align:center; }
 
-        .prompt {
-            color: var(--accent-green);
-        }
-
-        .command {
-            color: var(--text-light);
-            font-family: 'Share Tech Mono', monospace;
-            white-space: nowrap;
-            overflow: hidden;
-            border-right: 2px solid var(--accent-green);
-            animation: typing 3s steps(30) 1s, blink 0.5s step-end infinite alternate;
-            width: 0;
-            animation-fill-mode: forwards;
-        }
-
-        .telegram-link {
-            color: var(--accent-green);
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .telegram-link:hover {
-            text-shadow: 0 0 10px var(--accent-green);
-            filter: hue-rotate(90deg);
-        }
-
-        .copy-toast {
-            position: absolute;
-            bottom: -30px;
-            left: 0;
-            background: var(--layer-2);
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 3px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        /* Tools */
-        .tools {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 2rem;
-            margin: 3rem 0;
-            padding: 0 2rem;
-        }
-
-        .tool-item {
-            position: relative;
-            width: 72px;
-            height: 72px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .tool-icon {
-            width: 100%;
-            height: 100%;
-            filter: grayscale(100%) brightness(0.8);
-            transition: all 0.3s;
-        }
-
-        .tool-item:hover .tool-icon {
-            filter: none;
-            transform: translateY(-6px) scale(1.05);
-            filter: drop-shadow(0 0 10px var(--accent-green));
-        }
-
-        .tool-label {
-            position: absolute;
-            bottom: -25px;
-            font-size: 12px;
-            color: var(--accent-green);
-            opacity: 0;
-            transition: opacity 0.3s;
-            white-space: nowrap;
-        }
-
-        .tool-item:hover .tool-label {
-            opacity: 1;
-        }
-
-        /* Noise & Glitch */
-        .noise {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 4;
-            opacity: 0.03;
-            mix-blend-mode: overlay;
-        }
-
-        .glitch {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('assets/glitch.png');
-            opacity: 0;
-            mix-blend-mode: hard-light;
-            z-index: 5;
-            pointer-events: none;
-            animation: glitch-effect 0.2s infinite;
-        }
-
-        /* Animations */
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        @keyframes blink {
-            50% { border-color: transparent; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes glitch-effect {
-            0% { transform: translate(0); opacity: 0; }
-            10% { transform: translate(-2px, 2px); opacity: 0.8; }
-            20% { transform: translate(2px, -2px); opacity: 0.6; }
-            100% { transform: translate(0); opacity: 0; }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero {
-                background-attachment: scroll;
-            }
-            .silhouette {
-                width: 200px;
-                height: 300px;
-            }
-            .tools {
-                gap: 1rem;
-            }
-            .tool-item {
-                width: 48px;
-                height: 48px;
-            }
-            .glitch {
-                animation-duration: 0.1s;
-                opacity: 0.5;
-            }
-        }
-
-        /* Accessibility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
-        .btn {
-            background: none;
-            border: 1px solid var(--accent-green);
-            color: var(--accent-green);
-            padding: 10px 20px;
-            font-family: 'Share Tech Mono', monospace;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn:hover {
-            background: var(--accent-green);
-            color: var(--bg-black);
-        }
-    </style>
+  /* ------------------------
+     Responsiveness
+     ------------------------ */
+  @media (max-width:1000px){
+    .hero{ grid-template-columns: 1fr; gap:20px; padding-bottom:24px; }
+    .branding{ left:5%; bottom:4%; }
+    .panel{ order:2; }
+  }
+  @media (max-width:520px){
+    .fs{ font-size:60px; }
+    .panel{ padding:20px; border-radius:12px; }
+    .title{ font-size:22px; }
+    .terminal{ font-size:16px; }
+  }
+</style>
 </head>
 <body>
-    <section class="hero" aria-label="Hero section with F Society branding">
-        <div class="hero-bg" role="img" aria-label="Abstract hacker background"></div>
-        <div class="hero-overlay"></div>
-        <div class="noise">
-            <video autoplay muted loop playsinline>
-                <source src="assets/noise.webm" type="video/webm">
-            </video>
+  <div class="scene" aria-hidden="true">
+    <div class="bg" id="bg"></div>
+    <div class="noise" aria-hidden="true"></div>
+  </div>
+
+  <div class="wrap">
+    <div class="hero" role="main" aria-labelledby="main-title">
+      <!-- Left: brand emphasis (silhouette is in background) -->
+      <div style="position:relative; z-index:2; padding:36px 12px;">
+        <div class="branding" aria-hidden="true">
+          <div class="fs">F SOCIETY</div>
+          <div class="fs-sub">Private community · Closed access</div>
         </div>
-        <div class="glitch"></div>
 
-        <div class="hero-content">
-            <div class="silhouette" aria-hidden="true"></div>
-            
-            <div class="title-container">
-                <h1 class="main-title">F SOCIETY</h1>
-                <p class="subtitle">Private community. Closed access.</p>
-                <p class="micro-text">you found us — now forget us</p>
-            </div>
-
-            <div class="terminal">
-                <div class="terminal-line">
-                    <span class="prompt">&gt;</span>
-                    <span class="command">join: 
-                        <a class="telegram-link" href="https://t.me/example" target="_blank" 
-                           aria-label="Join our Telegram channel" 
-                           onclick="copyToClipboard(event, 'https://t.me/example')">
-                            t.me/example
-                        </a>
-                    </span>
-                </div>
-            </div>
-
-            <ul class="tools" role="list" aria-label="Security tools we use">
-                <li class="tool-item">
-                    <img src="assets/icons/nmap.svg" alt="Nmap" class="tool-icon">
-                    <span class="tool-label">&gt; nmap - network scanner</span>
-                </li>
-                <li class="tool-item">
-                    <img src="assets/icons/wireshark.svg" alt="Wireshark" class="tool-icon">
-                    <span class="tool-label">&gt; wireshark - packet analyzer</span>
-                </li>
-                <li class="tool-item">
-                    <img src="assets/icons/burp.svg" alt="Burp Suite" class="tool-icon">
-                    <span class="tool-label">&gt; burp - web security testing</span>
-                </li>
-                <li class="tool-item">
-                    <img src="assets/icons/kali.svg" alt="Kali Linux" class="tool-icon">
-                    <span class="tool-label">&gt; kali - penetration testing OS</span>
-                </li>
-                <li class="tool-item">
-                    <img src="assets/icons/anon-mask.svg" alt="Anonymity" class="tool-icon">
-                    <span class="tool-label">&gt; anonymity - our standard</span>
-                </li>
-            </ul>
+        <!-- optional short block under brand -->
+        <div style="margin-top:220px; color:var(--muted); max-width:520px;">
+          <p style="font-family:var(--mono); font-size:13px; letter-spacing:1px;">
+            OSINT · DATA · CONTROL
+          </p>
+          <p style="margin-top:10px; color:var(--muted); font-size:13px; line-height:1.4;">
+            Вход — по приглашению. Сайт — витрина. Не спрашивай.
+          </p>
         </div>
-    </section>
+      </div>
 
-    <footer style="padding: 2rem; text-align: center; font-size: 12px; color: #666;">
-        <p>F Society is a fictional entity. This site is for educational and stylistic demonstration only.</p>
-        <p>All trademarks and logos are property of their respective owners.</p>
-    </footer>
+      <!-- Right: Terminal / CTA panel -->
+      <div class="panel" aria-label="Terminal panel">
+        <div class="title" id="main-title" aria-hidden="false">
+          <span class="tLayer glitch">WE ARE F</span>
+          <span class="tLayer" style="color:transparent;">WE ARE F</span>
+          <span style="position:relative; z-index:1;">WE ARE F</span>
+        </div>
 
-    <script>
-        // Copy Telegram link
-        function copyToClipboard(event, text) {
-            event.preventDefault();
-            navigator.clipboard.writeText(text).then(() => {
-                const toast = document.createElement('div');
-                toast.className = 'copy-toast';
-                toast.textContent = 'Copied to clipboard';
-                toast.style.opacity = '1';
-                event.target.appendChild(toast);
-                
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => toast.remove(), 300);
-                }, 2000);
-            });
-        }
+        <div class="terminal" id="terminal" role="region" aria-live="polite" aria-atomic="false">
+          <!-- dynamic typing goes here -->
+        </div>
 
-        // Random glitch effect
-        setInterval(() => {
-            const glitch = document.querySelector('.glitch');
-            glitch.style.opacity = '0.8';
-            setTimeout(() => {
-                glitch.style.opacity = '0';
-            }, 200);
-        }, 8000 + Math.random() * 4000);
+        <div class="cmd" style="margin-top:16px;">
+          <div tabindex="0" role="button" aria-label="Copy telegram link" class="box" id="copyBtn">&gt; join: <span id="tgLinkText" style="font-family:var(--mono); color:var(--accent-green)">t.me/yourlink</span></div>
+          <div class="copied" id="copiedToast" role="status" aria-live="polite">copied: t.me/yourlink</div>
+        </div>
 
-        // Mobile detection
-        if (/Mobi|Android/i.test(navigator.userAgent)) {
-            document.querySelector('.hero').style.backgroundAttachment = 'scroll';
-        }
-    </script>
+        <div class="meta">Скопируй ссылку и уходи. Или долго смотри — решать тебе.</div>
+
+        <div class="icons" aria-hidden="false" style="margin-top:14px;">
+          <!-- Nmap (radar) -->
+          <div class="icon" title="Nmap — Network scanner" aria-label="Nmap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-green)">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" opacity="0.85"/>
+              <path d="M12 3v4" stroke="currentColor"/>
+              <path d="M12 21v-4" stroke="currentColor"/>
+              <path d="M3 12h4" stroke="currentColor"/>
+              <path d="M21 12h-4" stroke="currentColor"/>
+            </svg>
+          </div>
+
+          <!-- Wireshark (shark fin stylized) -->
+          <div class="icon" title="Wireshark — Packet analyzer" aria-label="Wireshark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:#4aa3f3">
+              <path d="M3 21s6-12 11-12 7 5 7 5l-9 7z" />
+            </svg>
+          </div>
+
+          <!-- Burp (shield) -->
+          <div class="icon" title="Burp Suite — Proxy" aria-label="Burp">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:#ffb74d">
+              <path d="M12 2l7 4v5c0 5-3.5 9-7 11-3.5-2-7-6-7-11V6z"/>
+            </svg>
+          </div>
+
+          <!-- Kali (simple K monogram) -->
+          <div class="icon" title="Kali Linux" aria-label="Kali">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="color:#6ec1ff">
+              <path d="M3 21c6-9 12-14 18-16" />
+              <path d="M12 3c2 1 4 4 6 6" />
+              <text x="2" y="20" font-family="monospace" font-size="8" fill="currentColor">K</text>
+            </svg>
+          </div>
+
+          <!-- Anonymous mask -->
+          <div class="icon" title="Anonymous" aria-label="Anonymous mask">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:#d4d4d4">
+              <path d="M12 3c3 0 5 2 5 4 0 3-2 4-5 4s-5-1-5-4c0-2 2-4 5-4z"/>
+              <path d="M6 17c2 3 14 3 16 0" />
+            </svg>
+          </div>
+        </div>
+
+        <footer>
+          <small>© F Society — This is a front-end demo. No back-end. No excuses.</small>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ------------------------
+   Config & Content
+   ------------------------ */
+const TELEGRAM_LINK = 't.me/yourlink'; // <-- change to your actual link
+const typingLines = [
+  {text: 'connection: established', delay: 900},
+  {text: 'auth: [private] access denied', delay: 1000},
+  {text: 'handshake: f-society', delay: 700},
+  {text: '', delay: 500},
+  {text: '> you found us — now forget us', delay: 1400},
+];
+
+/* ------------------------
+   Terminal typing effect
+   ------------------------ */
+const term = document.getElementById('terminal');
+
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+// type a single line like terminal
+async function typeLine(line, el, speed=28){
+  for (let i=0;i<line.length;i++){
+    el.textContent += line[i];
+    await sleep(speed + Math.random()*18);
+  }
+}
+
+// orchestrate multiple lines with cursor
+async function runTyping(){
+  term.textContent = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  cursor.setAttribute('aria-hidden','true');
+
+  for (let i=0;i<typingLines.length;i++){
+    const l = typingLines[i];
+    await typeLine(l.text, term, 24);
+    term.appendChild(cursor);
+    await sleep(l.delay);
+    cursor.remove();
+    // small newline after each but keep cursor visible on last
+    if (i < typingLines.length - 1) term.textContent += '\n';
+  }
+  // keep final cursor
+  term.appendChild(cursor);
+}
+
+// start initial typing
+runTyping();
+
+// occasionally retrigger a micro-glitch / retype small line
+setInterval(()=>{
+  if (Math.random() < 0.22){
+    // quick fake glitch line
+    const saved = term.textContent;
+    term.style.opacity = '0.6';
+    setTimeout(()=> term.style.opacity='1', 140);
+  }
+}, 4200);
+
+/* ------------------------
+   Copy-to-clipboard with fallback
+   ------------------------ */
+const copyBtn = document.getElementById('copyBtn');
+const tgLinkText = document.getElementById('tgLinkText');
+const copiedToast = document.getElementById('copiedToast');
+tgLinkText.textContent = TELEGRAM_LINK.replace(/^https?:\/\//,'').replace(/^\/+/,'');
+
+async function copyLink(){
+  const text = TELEGRAM_LINK.startsWith('http') ? TELEGRAM_LINK : 'https://' + TELEGRAM_LINK;
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text);
+    } else {
+      // fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    copiedToast.classList.add('show');
+    setTimeout(()=> copiedToast.classList.remove('show'), 2000);
+  } catch(e){
+    // degrade gracefully
+    copiedToast.textContent = 'copy failed — open manually';
+    copiedToast.classList.add('show');
+    setTimeout(()=> {
+      copiedToast.classList.remove('show');
+      copiedToast.textContent = 'copied: ' + tgLinkText.textContent;
+    }, 2500);
+  }
+}
+
+copyBtn.addEventListener('click', copyLink);
+copyBtn.addEventListener('keydown', (e)=> { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyLink(); } });
+
+/* ------------------------
+   Parallax subtle motion for background on mouse move
+   ------------------------ */
+const bg = document.getElementById('bg');
+let lX=0, lY=0;
+document.addEventListener('mousemove', (e)=>{
+  const w = window.innerWidth, h = window.innerHeight;
+  const nx = (e.clientX - w/2) / w;
+  const ny = (e.clientY - h/2) / h;
+  lX = nx * 8;
+  lY = ny * 6;
+  bg.style.transform = `translate3d(${lX}px, ${lY}px, 0) scale(1.02)`;
+});
+
+/* ------------------------
+   Accessibility: reduce motion preference
+   ------------------------ */
+function prefersReducedMotion(){
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+if (prefersReducedMotion()){
+  document.querySelectorAll('.glitch, .noise, .scene::after').forEach(n=>{ try{ n.style.animation='none'; }catch(e){} });
+}
+
+/* ------------------------
+   Small accessibility helper: focus styles
+   ------------------------ */
+copyBtn.addEventListener('focus', ()=> copyBtn.style.boxShadow = '0 12px 30px rgba(0,0,0,0.6)');
+copyBtn.addEventListener('blur', ()=> copyBtn.style.boxShadow = '');
+
+</script>
 </body>
 </html>
