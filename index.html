@@ -1,503 +1,623 @@
-<!doctype html>
-<html lang="ru">
+<!DOCTYPE html>
+<html lang="ru" class="no-js">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>F Society — Landing</title>
-<meta name="description" content="F Society — Private community. Terminal-style landing." />
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23000'/><text x='50' y='60' font-size='50' text-anchor='middle' fill='%230fb14b' font-family='monospace'>F</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <!-- Мета-теги (п. 34, 35) -->
+    <title>F SOCIETY | Private community • Closed access</title>
+    <meta name="description" content="Private community • Closed access. You found us — now forget us.">
+    <meta property="og:title" content="F SOCIETY">
+    <meta property="og:description" content="Private community • Closed access">
+    <meta property="og:image" content="https://i.imgur.com/fkLqjZy.png"> <!-- Замените на свой OG-image -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yourdomain.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <!-- Шрифты (п. 9) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>F</text></svg>">
+    <!-- Стили и скрипты встроены -->
+    <style>
+        :root {
+            --bg: #070707;
+            --accent-green: #0fb14b;
+            --accent-red: #b71c1c;
+            --muted: #8a8a8a;
+            --terminal-text: #e0e0e0;
+        }
 
-<!-- Optional: web font (fallbacks included) -->
-<link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-  /* ------------------------
-     Variables / base
-     ------------------------ */
-  :root{
-    --bg:#040404;
-    --muted:#8a8a8a;
-    --accent-green:#0fb14b;
-    --accent-red:#b71c1c;
-    --glass: rgba(255,255,255,0.03);
-    --mono: 'Inconsolata', ui-monospace, SFMono-Regular, Menlo, monospace;
-    --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    --max-width:1100px;
-  }
-  html,body{height:100%;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:#e6e6e6;
-    font-family:var(--sans);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    overflow-x:hidden;
-  }
+        html {
+            height: 100%;
+            scroll-behavior: smooth;
+        }
 
-  /* ------------------------
-     Layout
-     ------------------------ */
-  .wrap{
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:48px 24px;
-    position:relative;
-  }
-  .hero{
-    width:100%;
-    max-width:var(--max-width);
-    position:relative;
-    display:grid;
-    grid-template-columns: 1fr 480px;
-    gap:32px;
-    align-items:center;
-  }
+        body {
+            font-family: 'Inconsolata', monospace;
+            background-color: var(--bg);
+            color: var(--terminal-text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            line-height: 1.6;
+        }
 
-  /* ------------------------
-     Background / Mr Robot silhouette
-     ------------------------ */
-  .scene{
-    position: absolute;
-    inset:0;
-    z-index:0;
-    overflow:hidden;
-    pointer-events:none;
-  }
-  .scene .bg{
-    position:absolute;
-    inset:0;
-    background:
-      linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.7)),
-      url('data:image/svg+xml;utf8,\
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">\
-      <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="%23000000"/><stop offset="1" stop-color="%23000000"/></linearGradient></defs>\
-      <rect width="100%" height="100%" fill="%23020202"/>\
-      <!-- stylized hooded silhouette -->\
-      <g transform="translate(300,80) scale(1.6)" fill="%230b0b0b">\
-      <path d="M120 40 C60 50 20 120 40 220 C60 320 10 420 10 520 L350 520 C350 420 300 320 320 220 C340 120 300 50 240 40 Z" fill="%230b0b0b"/>\
-      <ellipse cx="185" cy="220" rx="60" ry="80" fill="%23040404"/>\
-      </g>\
-      </svg>') center/cover no-repeat;
-    filter: contrast(0.9) saturate(0.7) blur(0.2px);
-    transform-origin:center;
-  }
+        /* Фон и оверлей (п. 4, 5, 6, 7, 24) */
+        .background-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: 
+                radial-gradient(circle at 30% 50%, rgba(11, 102, 35, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 20%, rgba(183, 28, 28, 0.03) 0%, transparent 50%),
+                #000000;
+        }
 
-  /* scanlines (CRT) */
-  .scene::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px);
-    background-size:100% 3px;
-    mix-blend-mode:overlay;
-    pointer-events:none;
-    animation: scan 9s linear infinite;
-    opacity:0.6;
-  }
-  @keyframes scan { to { background-position: 0 1000px; } }
+        .silhouette-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 5vw;
+            pointer-events: none;
+            opacity: 0.7;
+        }
 
-  /* grain noise */
-  .noise{
-    position:absolute;
-    inset:0;
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400"><filter id="n"><feTurbulence baseFrequency="0.9" stitchTiles="stitch" numOctaves="2" /></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
-    mix-blend-mode:screen;
-    pointer-events:none;
-  }
+        .silhouette {
+            font-family: 'Inter', sans-serif;
+            font-size: min(40vw, 500px);
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.03);
+            text-shadow: 
+                -2px -2px 0 rgba(15, 177, 75, 0.05),
+                2px 2px 0 rgba(183, 28, 28, 0.05);
+            user-select: none;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
 
-  /* focal F Society text overlay */
-  .branding{
-    position:absolute;
-    left:6%;
-    bottom:6%;
-    z-index:1;
-    pointer-events:none;
-    transform:translateZ(0);
-  }
-  .branding .fs{
-    font-family:var(--mono);
-    font-weight:700;
-    font-size:96px;
-    line-height:0.9;
-    color:transparent;
-    -webkit-text-stroke:1px rgba(11,11,11,0.9);
-    text-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 24px rgba(11,241,75,0.03);
-    mix-blend-mode:normal;
-    letter-spacing:4px;
-  }
-  .fs-sub{
-    font-family:var(--sans);
-    font-size:20px;
-    color:var(--muted);
-    margin-top:6px;
-  }
+        /* Шум и scanline (п. 4, 23) */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.4;
+        }
 
-  /* ------------------------
-     Right column: terminal
-     ------------------------ */
-  .panel{
-    position:relative;
-    z-index:2;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-    border-radius:16px;
-    padding:28px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    backdrop-filter: blur(6px) saturate(1.1);
-    border:1px solid rgba(255,255,255,0.03);
-    min-height:260px;
-  }
-  .terminal{
-    font-family:var(--mono);
-    color:var(--accent-green);
-    font-size:18px;
-    background:transparent;
-    overflow:hidden;
-    white-space:pre-wrap;
-    line-height:1.45;
-    position:relative;
-    min-height:150px;
-  }
-  .terminal .cursor{
-    display:inline-block;
-    width:10px;
-    background:var(--accent-green);
-    margin-left:4px;
-    animation:blink 1s steps(2) infinite;
-    vertical-align:bottom;
-  }
-  @keyframes blink { 50%{ opacity:0 } }
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 0, 0, 0.5) 50%
+            );
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+            animation: scanline 12s linear infinite;
+            opacity: 0.15;
+        }
 
-  /* glitch layers for terminal heading */
-  .title{
-    font-family:var(--mono);
-    font-size:28px;
-    color:#e6e6e6;
-    margin-bottom:12px;
-    position:relative;
-    display:inline-block;
-  }
-  .title .tLayer{
-    position:absolute;
-    left:0; top:0;
-    width:100%;
-    height:100%;
-  }
-  .glitch {
-    animation: glitchAnim 6s infinite;
-  }
-  @keyframes glitchAnim {
-    0% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
-    5% { transform: translateX(-2px); opacity:0.95; clip-path: inset(2% 0 70% 0); }
-    6% { transform: translateX(2px); opacity:0.95; clip-path: inset(20% 0 30% 0); }
-    10% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
-    80% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
-    85% { transform: translateX(-1px); opacity:0.96; clip-path: inset(30% 0 10% 0); }
-    88% { transform: translateX(1px); opacity:0.94; clip-path: inset(10% 0 40% 0); }
-    100% { transform: translateX(0); opacity:1; clip-path: inset(0 0 0 0); }
-  }
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
 
-  /* copy CTA styled as terminal command */
-  .cmd{
-    margin-top:14px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-  .cmd .box{
-    padding:12px 14px;
-    border-radius:8px;
-    background:linear-gradient(90deg, rgba(0,0,0,0.35), rgba(255,255,255,0.02));
-    font-family:var(--mono);
-    color:var(--accent-green);
-    cursor:pointer;
-    user-select:none;
-    border:1px solid rgba(11,241,75,0.06);
-    box-shadow: inset 0 -6px 18px rgba(0,0,0,0.5);
-    transition: transform .12s ease, box-shadow .12s ease;
-  }
-  .cmd .box:focus, .cmd .box:hover{ transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,0.55); outline:none; }
-  .copied{
-    padding:8px 10px;
-    border-radius:8px;
-    background: rgba(11,241,75,0.08);
-    color:var(--accent-green);
-    font-family:var(--mono);
-    border:1px solid rgba(11,241,75,0.06);
-    display:none;
-  }
-  .copied.show{ display:inline-block; animation:pop .4s ease; }
-  @keyframes pop { from { transform: translateY(6px) scale(.98); opacity:0 } to { transform: translateY(0) scale(1); opacity:1 } }
+        /* Основной контент (п. 8, 10, 12) */
+        .main-container {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-end;
+            padding: 5vw;
+        }
 
-  /* small meta text */
-  .meta{ color:var(--muted); font-size:13px; margin-top:10px; }
+        .text-block {
+            max-width: 700px;
+            text-align: right;
+            margin-bottom: 80px;
+        }
 
-  /* icons row */
-  .icons{
-    display:flex;
-    gap:12px;
-    margin-top:18px;
-    align-items:center;
-    flex-wrap:wrap;
-  }
-  .icon{
-    width:46px; height:46px;
-    display:inline-grid; place-items:center;
-    background: rgba(255,255,255,0.02);
-    border-radius:10px;
-    border:1px solid rgba(255,255,255,0.02);
-    transition:transform .14s ease, box-shadow .14s ease;
-    cursor:default;
-  }
-  .icon:hover{ transform:translateY(-6px); box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
-  .icon svg{ width:26px; height:26px; display:block; }
+        .main-title {
+            font-family: 'Inconsolata', monospace;
+            font-size: clamp(3.5rem, 10vw, 5.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
+        }
 
-  /* footer tiny text */
-  footer{ position:relative; z-index:2; margin-top:32px; color:var(--muted); font-size:12px; text-align:center; }
+        .subtitle {
+            font-family: 'Inter', sans-serif;
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            font-weight: 300;
+            color: var(--muted);
+            margin-bottom: 3rem;
+            letter-spacing: 0.05em;
+        }
 
-  /* ------------------------
-     Responsiveness
-     ------------------------ */
-  @media (max-width:1000px){
-    .hero{ grid-template-columns: 1fr; gap:20px; padding-bottom:24px; }
-    .branding{ left:5%; bottom:4%; }
-    .panel{ order:2; }
-  }
-  @media (max-width:520px){
-    .fs{ font-size:60px; }
-    .panel{ padding:20px; border-radius:12px; }
-    .title{ font-size:22px; }
-    .terminal{ font-size:16px; }
-  }
-</style>
+        /* CTA / Терминальная строка (п. 14, 15, 16) */
+        .terminal-cta {
+            position: relative;
+            display: inline-block;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            background: rgba(15, 177, 75, 0.05);
+            border: 1px solid rgba(15, 177, 75, 0.2);
+            padding: 1.2rem 2rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .terminal-cta::before {
+            content: '>';
+            color: var(--accent-green);
+            margin-right: 0.8rem;
+            font-weight: bold;
+        }
+
+        .terminal-cta:hover {
+            background: rgba(15, 177, 75, 0.1);
+            border-color: rgba(15, 177, 75, 0.5);
+            box-shadow: 0 0 20px rgba(15, 177, 75, 0.2);
+        }
+
+        .terminal-cta:focus {
+            outline: 2px solid var(--accent-green);
+            outline-offset: 2px;
+        }
+
+        .terminal-cta.copied::after {
+            content: 'copied';
+            position: absolute;
+            top: -25px;
+            right: 0;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 2px;
+            animation: fadeOut 2s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Иконки инструментов (п. 17, 18, 19, 20, 21) */
+        .tools-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            gap: 25px;
+            z-index: 10;
+        }
+
+        .tool-icon {
+            width: 36px;
+            height: 36px;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+            position: relative;
+            filter: brightness(0.8);
+        }
+
+        .tool-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--terminal-text);
+        }
+
+        .tool-icon:hover {
+            opacity: 1;
+            transform: translateY(-3px);
+            filter: brightness(1.2) drop-shadow(0 0 5px rgba(15, 177, 75, 0.5));
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            right: 50%;
+            transform: translateX(50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: var(--accent-green);
+            padding: 5px 10px;
+            border-radius: 2px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            margin-bottom: 8px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
+            border: 1px solid rgba(15, 177, 75, 0.3);
+        }
+
+        .tool-icon:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Микротекст (п. 13) */
+        .micro-text {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.75rem;
+            color: rgba(138, 138, 138, 0.4);
+            z-index: 10;
+            user-select: none;
+        }
+
+        /* Анимации глитча (п. 22, 26) */
+        .glitch {
+            animation: glitch-anim 0.3s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 1px); clip-path: inset(20% 0 30% 0); }
+            40% { transform: translate(-1px, -1px); clip-path: inset(50% 0 20% 0); }
+            60% { transform: translate(1px, 2px); clip-path: inset(10% 0 60% 0); }
+            80% { transform: translate(1px, -1px); clip-path: inset(80% 0 5% 0); }
+            100% { transform: translate(0); }
+        }
+
+        /* Мигающий курсор (п. 25) */
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1.2em;
+            background-color: var(--accent-green);
+            margin-left: 5px;
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Адаптивность (п. 31, 32) */
+        @media (max-width: 768px) {
+            .silhouette-container {
+                justify-content: center;
+                padding-left: 0;
+                opacity: 0.4;
+            }
+            .silhouette {
+                font-size: 60vw;
+            }
+            .main-container {
+                align-items: center;
+                text-align: center;
+                padding: 20px;
+            }
+            .text-block {
+                text-align: center;
+                margin-bottom: 60px;
+            }
+            .tools-container {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                justify-content: center;
+                width: 100%;
+                margin-top: 40px;
+                order: 2;
+            }
+            .micro-text {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                text-align: center;
+                width: 100%;
+                margin-top: 20px;
+                order: 3;
+            }
+            .main-container {
+                flex-direction: column;
+                justify-content: space-between;
+                padding-bottom: 40px;
+            }
+            .terminal-cta {
+                padding: 1rem 1.5rem;
+                min-height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        /* Секция пасхалки (п. 38) */
+        .easter-egg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(7, 7, 7, 0.98);
+            border: 1px solid var(--accent-red);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 40px rgba(183, 28, 28, 0.3);
+        }
+
+        .easter-egg.active {
+            display: block;
+            animation: terminalAppear 0.5s ease;
+        }
+
+        @keyframes terminalAppear {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .easter-egg pre {
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .close-egg {
+            background: transparent;
+            border: 1px solid var(--muted);
+            color: var(--muted);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            float: right;
+            transition: all 0.3s;
+        }
+
+        .close-egg:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+        }
+    </style>
 </head>
 <body>
-  <div class="scene" aria-hidden="true">
-    <div class="bg" id="bg"></div>
-    <div class="noise" aria-hidden="true"></div>
-  </div>
-
-  <div class="wrap">
-    <div class="hero" role="main" aria-labelledby="main-title">
-      <!-- Left: brand emphasis (silhouette is in background) -->
-      <div style="position:relative; z-index:2; padding:36px 12px;">
-        <div class="branding" aria-hidden="true">
-          <div class="fs">F SOCIETY</div>
-          <div class="fs-sub">Private community · Closed access</div>
-        </div>
-
-        <!-- optional short block under brand -->
-        <div style="margin-top:220px; color:var(--muted); max-width:520px;">
-          <p style="font-family:var(--mono); font-size:13px; letter-spacing:1px;">
-            OSINT · DATA · CONTROL
-          </p>
-          <p style="margin-top:10px; color:var(--muted); font-size:13px; line-height:1.4;">
-            Вход — по приглашению. Сайт — витрина. Не спрашивай.
-          </p>
-        </div>
-      </div>
-
-      <!-- Right: Terminal / CTA panel -->
-      <div class="panel" aria-label="Terminal panel">
-        <div class="title" id="main-title" aria-hidden="false">
-          <span class="tLayer glitch">WE ARE F</span>
-          <span class="tLayer" style="color:transparent;">WE ARE F</span>
-          <span style="position:relative; z-index:1;">WE ARE F</span>
-        </div>
-
-        <div class="terminal" id="terminal" role="region" aria-live="polite" aria-atomic="false">
-          <!-- dynamic typing goes here -->
-        </div>
-
-        <div class="cmd" style="margin-top:16px;">
-          <div tabindex="0" role="button" aria-label="Copy telegram link" class="box" id="copyBtn">&gt; join: <span id="tgLinkText" style="font-family:var(--mono); color:var(--accent-green)">t.me/yourlink</span></div>
-          <div class="copied" id="copiedToast" role="status" aria-live="polite">copied: t.me/yourlink</div>
-        </div>
-
-        <div class="meta">Скопируй ссылку и уходи. Или долго смотри — решать тебе.</div>
-
-        <div class="icons" aria-hidden="false" style="margin-top:14px;">
-          <!-- Nmap (radar) -->
-          <div class="icon" title="Nmap — Network scanner" aria-label="Nmap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent-green)">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" opacity="0.85"/>
-              <path d="M12 3v4" stroke="currentColor"/>
-              <path d="M12 21v-4" stroke="currentColor"/>
-              <path d="M3 12h4" stroke="currentColor"/>
-              <path d="M21 12h-4" stroke="currentColor"/>
-            </svg>
-          </div>
-
-          <!-- Wireshark (shark fin stylized) -->
-          <div class="icon" title="Wireshark — Packet analyzer" aria-label="Wireshark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:#4aa3f3">
-              <path d="M3 21s6-12 11-12 7 5 7 5l-9 7z" />
-            </svg>
-          </div>
-
-          <!-- Burp (shield) -->
-          <div class="icon" title="Burp Suite — Proxy" aria-label="Burp">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:#ffb74d">
-              <path d="M12 2l7 4v5c0 5-3.5 9-7 11-3.5-2-7-6-7-11V6z"/>
-            </svg>
-          </div>
-
-          <!-- Kali (simple K monogram) -->
-          <div class="icon" title="Kali Linux" aria-label="Kali">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="color:#6ec1ff">
-              <path d="M3 21c6-9 12-14 18-16" />
-              <path d="M12 3c2 1 4 4 6 6" />
-              <text x="2" y="20" font-family="monospace" font-size="8" fill="currentColor">K</text>
-            </svg>
-          </div>
-
-          <!-- Anonymous mask -->
-          <div class="icon" title="Anonymous" aria-label="Anonymous mask">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color:#d4d4d4">
-              <path d="M12 3c3 0 5 2 5 4 0 3-2 4-5 4s-5-1-5-4c0-2 2-4 5-4z"/>
-              <path d="M6 17c2 3 14 3 16 0" />
-            </svg>
-          </div>
-        </div>
-
-        <footer>
-          <small>© F Society — This is a front-end demo. No back-end. No excuses.</small>
-        </footer>
-      </div>
+    <!-- Фон и силуэт (п. 4) -->
+    <div class="background-layer"></div>
+    <div class="silhouette-container">
+        <div class="silhouette" id="silhouette">F</div>
     </div>
-  </div>
+    <div class="noise-overlay"></div>
+    <div class="scanlines"></div>
 
-<script>
-/* ------------------------
-   Config & Content
-   ------------------------ */
-const TELEGRAM_LINK = 't.me/yourlink'; // <-- change to your actual link
-const typingLines = [
-  {text: 'connection: established', delay: 900},
-  {text: 'auth: [private] access denied', delay: 1000},
-  {text: 'handshake: f-society', delay: 700},
-  {text: '', delay: 500},
-  {text: '> you found us — now forget us', delay: 1400},
-];
+    <!-- Основной контент -->
+    <main class="main-container">
+        <div class="text-block">
+            <h1 class="main-title" id="mainTitle">
+                <span class="title-text">F SOCIETY</span>
+                <span class="cursor"></span>
+            </h1>
+            <p class="subtitle" id="subtitle">Private community • Closed access</p>
+            <div class="terminal-cta" id="terminalCta" 
+                 tabindex="0" 
+                 role="button" 
+                 aria-label="Скопировать ссылку для присоединения к Telegram-группе">
+                join: t.me/yourlink
+            </div>
+        </div>
 
-/* ------------------------
-   Terminal typing effect
-   ------------------------ */
-const term = document.getElementById('terminal');
+        <!-- Иконки инструментов -->
+        <div class="tools-container">
+            <!-- Иконки добавлены как встроенный SVG -->
+            <div class="tool-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.6 0 12 0zm0 2c5.5 0 10 4.5 10 10s-4.5 10-10 10S2 17.5 2 12 6.5 2 12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+                <div class="tooltip">Nmap — network scanner</div>
+            </div>
+            <div class="tool-icon">
+                <svg viewBox="0 0 24 24"><path d="M2 2v20h20V2H2zm18 18H4V4h16v16z"/><rect x="6" y="6" width="12" height="3"/><rect x="6" y="11" width="12" height="3"/><rect x="6" y="16" width="7" height="3"/></svg>
+                <div class="tooltip">Wireshark — traffic analyzer</div>
+            </div>
+            <div class="tool-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><path d="M13 7h-2v6h6v-2h-4z"/></svg>
+                <div class="tooltip">Burp Suite — web proxy</div>
+            </div>
+            <div class="tool-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                <div class="tooltip">Kali Linux — penetration OS</div>
+            </div>
+            <div class="tool-icon">
+                <svg viewBox="0 0 24 24"><path d="M16 4c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm-2 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm6 0c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-4 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-8 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-2c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm4 2c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"/></svg>
+                <div class="tooltip">Anonymous — mask of Guy Fawkes</div>
+            </div>
+        </div>
 
-function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+        <!-- Микротекст -->
+        <div class="micro-text">you found us — now forget us.</div>
+    </main>
 
-// type a single line like terminal
-async function typeLine(line, el, speed=28){
-  for (let i=0;i<line.length;i++){
-    el.textContent += line[i];
-    await sleep(speed + Math.random()*18);
-  }
-}
+    <!-- Секция пасхалки -->
+    <div class="easter-egg" id="easterEgg">
+        <pre>
+[ F SOCIETY TERMINAL - v2.5.19 ]
+> DECRYPTING ACCESS LOGS...
+> USER_ID: [REDACTED]
+> ENTRY_VECTOR: SILHOUETTE_SEQUENCE
+> STATUS: CLEARED
 
-// orchestrate multiple lines with cursor
-async function runTyping(){
-  term.textContent = '';
-  const cursor = document.createElement('span');
-  cursor.className = 'cursor';
-  cursor.setAttribute('aria-hidden','true');
+> SYSTEM MESSAGE:
+  "The competent man is the man who finds
+   almost everything wrong and the other
+   man wrong, but never himself."
 
-  for (let i=0;i<typingLines.length;i++){
-    const l = typingLines[i];
-    await typeLine(l.text, term, 24);
-    term.appendChild(cursor);
-    await sleep(l.delay);
-    cursor.remove();
-    // small newline after each but keep cursor visible on last
-    if (i < typingLines.length - 1) term.textContent += '\n';
-  }
-  // keep final cursor
-  term.appendChild(cursor);
-}
+> CONNECTION ESTABLISHED.
+> WIPE LOGS? [Y/n]
+        </pre>
+        <button class="close-egg" id="closeEgg">CLOSE</button>
+    </div>
 
-// start initial typing
-runTyping();
+    <!-- Скрипты -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Элементы
+            const mainTitle = document.getElementById('mainTitle');
+            const subtitle = document.getElementById('subtitle');
+            const terminalCta = document.getElementById('terminalCta');
+            const silhouette = document.getElementById('silhouette');
+            const easterEgg = document.getElementById('easterEgg');
+            const closeEgg = document.getElementById('closeEgg');
 
-// occasionally retrigger a micro-glitch / retype small line
-setInterval(()=>{
-  if (Math.random() < 0.22){
-    // quick fake glitch line
-    const saved = term.textContent;
-    term.style.opacity = '0.6';
-    setTimeout(()=> term.style.opacity='1', 140);
-  }
-}, 4200);
+            // Текст для анимации набора (п. 11, 12)
+            const titleText = "F SOCIETY";
+            const subtitleText = "Private community • Closed access";
+            const ctaText = "join: t.me/yourlink";
 
-/* ------------------------
-   Copy-to-clipboard with fallback
-   ------------------------ */
-const copyBtn = document.getElementById('copyBtn');
-const tgLinkText = document.getElementById('tgLinkText');
-const copiedToast = document.getElementById('copiedToast');
-tgLinkText.textContent = TELEGRAM_LINK.replace(/^https?:\/\//,'').replace(/^\/+/,'');
+            // Тайминг анимации
+            let titleCharIndex = 0;
+            let subtitleCharIndex = 0;
+            let titleInterval, subtitleInterval;
 
-async function copyLink(){
-  const text = TELEGRAM_LINK.startsWith('http') ? TELEGRAM_LINK : 'https://' + TELEGRAM_LINK;
-  try{
-    if (navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(text);
-    } else {
-      // fallback
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    }
-    copiedToast.classList.add('show');
-    setTimeout(()=> copiedToast.classList.remove('show'), 2000);
-  } catch(e){
-    // degrade gracefully
-    copiedToast.textContent = 'copy failed — open manually';
-    copiedToast.classList.add('show');
-    setTimeout(()=> {
-      copiedToast.classList.remove('show');
-      copiedToast.textContent = 'copied: ' + tgLinkText.textContent;
-    }, 2500);
-  }
-}
+            // Функция для анимации набора текста
+            function typeWriter(element, text, speed, callback) {
+                let index = 0;
+                element.innerHTML = '';
+                const interval = setInterval(() => {
+                    if (index < text.length) {
+                        element.innerHTML += text.charAt(index);
+                        index++;
+                    } else {
+                        clearInterval(interval);
+                        if (callback) callback();
+                    }
+                }, speed);
+            }
 
-copyBtn.addEventListener('click', copyLink);
-copyBtn.addEventListener('keydown', (e)=> { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyLink(); } });
+            // Запуск анимации с задержкой
+            setTimeout(() => {
+                typeWriter(mainTitle.querySelector('.title-text'), titleText, 100, () => {
+                    setTimeout(() => {
+                        typeWriter(subtitle, subtitleText, 50);
+                    }, 300);
+                });
+            }, 500);
 
-/* ------------------------
-   Parallax subtle motion for background on mouse move
-   ------------------------ */
-const bg = document.getElementById('bg');
-let lX=0, lY=0;
-document.addEventListener('mousemove', (e)=>{
-  const w = window.innerWidth, h = window.innerHeight;
-  const nx = (e.clientX - w/2) / w;
-  const ny = (e.clientY - h/2) / h;
-  lX = nx * 8;
-  lY = ny * 6;
-  bg.style.transform = `translate3d(${lX}px, ${lY}px, 0) scale(1.02)`;
-});
+            // Копирование ссылки (п. 14, 15)
+            terminalCta.addEventListener('click', function() {
+                navigator.clipboard.writeText('https://t.me/yourlink').then(() => {
+                    const originalText = this.textContent;
+                    this.classList.add('copied');
+                    this.textContent = '> ' + ctaText;
+                    
+                    // Аналитика события (п. 30)
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'copy_link', {
+                            'event_category': 'engagement',
+                            'event_label': 'telegram_link'
+                        });
+                    }
+                    
+                    setTimeout(() => {
+                        this.classList.remove('copied');
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Ошибка копирования: ', err);
+                    this.textContent = '> Error: Press Ctrl+C to copy';
+                    setTimeout(() => {
+                        this.textContent = '> ' + ctaText;
+                    }, 2000);
+                });
+            });
 
-/* ------------------------
-   Accessibility: reduce motion preference
-   ------------------------ */
-function prefersReducedMotion(){
-  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-if (prefersReducedMotion()){
-  document.querySelectorAll('.glitch, .noise, .scene::after').forEach(n=>{ try{ n.style.animation='none'; }catch(e){} });
-}
+            // Обработка клавиатуры для CTA
+            terminalCta.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    terminalCta.click();
+                }
+            });
 
-/* ------------------------
-   Small accessibility helper: focus styles
-   ------------------------ */
-copyBtn.addEventListener('focus', ()=> copyBtn.style.boxShadow = '0 12px 30px rgba(0,0,0,0.6)');
-copyBtn.addEventListener('blur', ()=> copyBtn.style.boxShadow = '');
+            // Случайные глитчи (п. 26)
+            function triggerRandomGlitch() {
+                if (Math.random() < 0.02) { // 2% шанс
+                    mainTitle.classList.add('glitch');
+                    setTimeout(() => {
+                        mainTitle.classList.remove('glitch');
+                    }, 300);
+                }
+                // Случайный сдвиг силуэта для параллакса
+                silhouette.style.transform = `translate(${Math.random() * 6 - 3}px, ${Math.random() * 6 - 3}px)`;
+            }
+            setInterval(triggerRandomGlitch, 3000);
 
-</script>
+            // Пасхальное яйцо (п. 38)
+            let clickCount = 0;
+            let lastClickTime = 0;
+            silhouette.addEventListener('click', (e) => {
+                const currentTime = new Date().getTime();
+                if (currentTime - lastClickTime > 500) {
+                    clickCount = 0;
+                }
+                clickCount++;
+                lastClickTime = currentTime;
+                
+                if (clickCount >= 7) {
+                    easterEgg.classList.add('active');
+                    clickCount = 0;
+                }
+                
+                // Визуальный отклик на клик
+                silhouette.style.color = `rgba(255, 255, 255, ${0.03 + clickCount * 0.01})`;
+                setTimeout(() => {
+                    silhouette.style.color = 'rgba(255, 255, 255, 0.03)';
+                }, 200);
+            });
+
+            // Закрытие пасхального яйца
+            closeEgg.addEventListener('click', () => {
+                easterEgg.classList.remove('active');
+            });
+
+            // Эффект параллакса для фона (п. 24)
+            document.addEventListener('mousemove', (e) => {
+                const x = (window.innerWidth - e.pageX * 2) / 90;
+                const y = (window.innerHeight - e.pageY * 2) / 90;
+                document.querySelector('.silhouette-container').style.transform = `translate(${x}px, ${y}px)`;
+            });
+
+            // Инициализация
+            console.log('%c[FSOCIETY:v2.5]%c Система инициализирована.', 'color:#0fb14b; font-weight:bold;', 'color:#8a8a8a;');
+        });
+    </script>
 </body>
 </html>
