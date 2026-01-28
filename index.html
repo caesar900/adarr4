@@ -3,486 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Probiv Bot - OSINT Intelligence Platform</title>
-    
-    <!-- Leaflet CSS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <title>Probiv Bot</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        /* ===== CSS VARIABLES ===== */
         :root {
             --primary-dark: #0a0a0f;
             --secondary-dark: #151520;
             --accent-orange: #ff6b35;
-            --accent-blue: #4d8af0;
-            --accent-green: #2ecc71;
-            --accent-red: #e74c3c;
-            --muted-gray: #6c757d;
-            --light-gray: #e9ecef;
-            --border-color: #2a2a3a;
+            --accent-blue: #4285f4;
+            --text-primary: #e0e0f0;
+            --text-secondary: #a0a0c0;
+            --border-gray: #2a2a40;
             --card-bg: #1a1a2e;
-            --hover-bg: #252540;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --border-radius: 8px;
+            --success-green: #2ecc71;
+            --danger-red: #e74c3c;
+            --warning-yellow: #f39c12;
+            --shadow-glow: 0 0 15px rgba(255, 107, 53, 0.3);
         }
-
-        /* ===== BASE STYLES ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
-
-        html {
-            font-size: 16px;
-            scroll-behavior: smooth;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background-color: var(--primary-dark);
-            color: var(--light-gray);
-            line-height: 1.6;
+            background: var(--primary-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
             overflow-x: hidden;
-            height: 100vh;
         }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-weight: 600;
-            line-height: 1.3;
-        }
-
-        .display-font {
-            font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        }
-
-        /* ===== LAYOUT GRID ===== */
-        .app-container {
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            grid-template-rows: 70px 1fr;
-            grid-template-areas: 
-                "sidebar topbar"
-                "sidebar main";
-            height: 100vh;
-            transition: var(--transition);
-        }
-
-        /* ===== TOPBAR ===== */
         .topbar {
-            grid-area: topbar;
-            background-color: var(--secondary-dark);
-            border-bottom: 1px solid var(--border-color);
+            background: var(--secondary-dark);
+            padding: 15px 30px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
+            gap: 30px;
+            border-bottom: 1px solid var(--border-gray);
             position: sticky;
             top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            z-index: 1000;
         }
-
-        .logo-container {
+        .logo {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-orange);
         }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--accent-orange), #ff8c42);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
+        .logo i {
+            font-size: 2.2rem;
         }
-
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, var(--accent-orange), var(--accent-blue));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -0.5px;
-        }
-
-        .search-container {
+        .search-box {
             flex: 1;
             max-width: 500px;
-            margin: 0 2rem;
-            position: relative;
         }
-
-        .search-input {
+        .search-box input {
             width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            color: var(--light-gray);
-            font-size: 0.95rem;
-            transition: var(--transition);
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
         }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--accent-blue);
-            box-shadow: 0 0 0 3px rgba(77, 138, 240, 0.2);
+        .search-box input::placeholder {
+            color: var(--text-secondary);
         }
-
-        .search-icon {
-            position: absolute;
-            left: 0.75rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--muted-gray);
-        }
-
-        .topbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-        }
-
-        .vpn-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: var(--muted-gray);
-        }
-
-        .vpn-indicator {
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent-green);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .settings-btn {
-            background: none;
-            border: none;
-            color: var(--muted-gray);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: var(--transition);
-            padding: 0.5rem;
-            border-radius: 6px;
-        }
-
-        .settings-btn:hover {
-            color: var(--light-gray);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
         .scan-btn {
-            background: linear-gradient(135deg, var(--accent-orange), #ff8c42);
+            background: linear-gradient(135deg, var(--accent-orange), #ff8b35);
             color: white;
             border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            font-size: 0.95rem;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+            gap: 10px;
         }
-
         .scan-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+            box-shadow: var(--shadow-glow);
         }
-
         .scan-btn:active {
             transform: translateY(0);
         }
-
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            grid-area: sidebar;
-            background-color: var(--secondary-dark);
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-            padding: 1.5rem 0;
+        .topbar-right {
             display: flex;
-            flex-direction: column;
-            gap: 2rem;
+            align-items: center;
+            gap: 20px;
         }
-
-        .sidebar-section {
-            padding: 0 1.5rem;
+        .vpn-status {
+            color: var(--success-green);
+            font-size: 0.9rem;
+            padding: 6px 12px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 20px;
+            border: 1px solid var(--success-green);
         }
-
-        .section-title {
-            font-size: 0.8rem;
+        .settings-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        .settings-btn:hover {
+            color: var(--accent-orange);
+            background: rgba(255, 107, 53, 0.1);
+        }
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        .sidebar {
+            width: 260px;
+            background: var(--secondary-dark);
+            border-right: 1px solid var(--border-gray);
+            padding: 25px 0;
+            flex-shrink: 0;
+        }
+        .menu-section {
+            margin-bottom: 30px;
+        }
+        .menu-title {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--muted-gray);
-            margin-bottom: 1rem;
-            font-weight: 600;
+            padding: 0 25px 10px;
         }
-
-        .nav-menu {
-            list-style: none;
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px 25px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .menu-item:hover {
+            background: rgba(255, 107, 53, 0.05);
+            color: var(--accent-orange);
+        }
+        .menu-item.active {
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--accent-orange);
+            border-left-color: var(--accent-orange);
+        }
+        .main-content {
+            flex: 1;
+            padding: 25px;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 25px;
         }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 6px;
-            color: var(--light-gray);
-            text-decoration: none;
-            transition: var(--transition);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .nav-item:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .nav-item.active {
-            background-color: rgba(255, 107, 53, 0.1);
-            color: var(--accent-orange);
-            border-left: 3px solid var(--accent-orange);
-        }
-
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 60%;
-            background-color: var(--accent-orange);
-            border-radius: 0 3px 3px 0;
-        }
-
-        .nav-icon {
-            font-size: 1.1rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .investigation-target {
-            background-color: rgba(77, 138, 240, 0.1);
-            border: 1px solid rgba(77, 138, 240, 0.3);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .target-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .target-email {
-            font-size: 0.85rem;
-            color: var(--muted-gray);
-        }
-
-        /* ===== MAIN CONTENT ===== */
-        .main-content {
-            grid-area: main;
-            padding: 2rem;
-            overflow-y: auto;
-            background-color: var(--primary-dark);
-        }
-
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .page-title {
-            font-size: 1.8rem;
-            color: var(--light-gray);
-        }
-
-        .timestamp {
-            font-size: 0.9rem;
-            color: var(--muted-gray);
-        }
-
-        /* ===== STATS CARDS ===== */
-        .stats-grid {
+        .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 20px;
         }
-
         .stat-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid var(--border-gray);
+            transition: all 0.3s;
         }
-
         .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-blue);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-orange);
+            box-shadow: var(--shadow-glow);
         }
-
         .stat-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
+            gap: 15px;
+            margin-bottom: 15px;
         }
-
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             border-radius: 10px;
+            background: rgba(255, 107, 53, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            color: white;
+            font-size: 1.8rem;
+            color: var(--accent-orange);
         }
-
-        .stat-icon.social {
-            background: linear-gradient(135deg, #4267B2, #898F9C);
+        .stat-title {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
         }
-
-        .stat-icon.leak {
-            background: linear-gradient(135deg, var(--accent-red), #ff7675);
-        }
-
-        .stat-icon.phone {
-            background: linear-gradient(135deg, var(--accent-green), #2ecc71);
-        }
-
         .stat-value {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--accent-orange);
         }
-
-        .stat-label {
+        .stat-sub {
+            color: var(--text-secondary);
             font-size: 0.9rem;
-            color: var(--muted-gray);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 5px;
         }
-
-        .stat-details {
-            font-size: 0.85rem;
-            color: var(--muted-gray);
-            margin-top: 0.5rem;
-        }
-
-        /* ===== OSINT GRID ===== */
-        .osint-grid {
+        .overview-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 20px;
         }
-
         .grid-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-gray);
+            padding: 20px;
         }
-
-        .card-header {
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+        .grid-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-gray);
+            color: var(--accent-orange);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 10px;
         }
-
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .card-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .card-action-btn {
-            background: none;
-            border: none;
-            color: var(--muted-gray);
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 4px;
-            transition: var(--transition);
-        }
-
-        .card-action-btn:hover {
-            color: var(--light-gray);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .card-body {
-            padding: 1.5rem;
-            flex: 1;
-        }
-
-        /* ===== SOCIAL MEDIA LIST ===== */
         .social-list {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 12px;
         }
-
         .social-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 6px;
-            background-color: rgba(255, 255, 255, 0.02);
-            transition: var(--transition);
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            transition: all 0.2s;
         }
-
         .social-item:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 107, 53, 0.1);
+            transform: translateX(5px);
         }
-
         .social-icon {
             width: 32px;
             height: 32px;
@@ -491,2016 +259,910 @@
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1rem;
+            font-size: 1.2rem;
         }
-
-        .social-info {
-            flex: 1;
-        }
-
         .social-name {
-            font-weight: 500;
-            margin-bottom: 0.1rem;
-        }
-
-        .social-username {
-            font-size: 0.85rem;
-            color: var(--muted-gray);
-        }
-
-        .social-status {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            flex: 1;
             font-weight: 600;
         }
-
+        .social-user {
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+        .social-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
         .status-found {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success-green);
         }
-
         .status-missing {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--accent-red);
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger-red);
         }
-
-        /* ===== DATA BREACHES ===== */
         .breach-list {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 12px;
         }
-
         .breach-item {
-            background-color: rgba(255, 255, 255, 0.02);
-            border-radius: 6px;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .breach-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 15px;
             cursor: pointer;
+            transition: all 0.2s;
         }
-
+        .breach-item:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
         .breach-source {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 0.75rem;
+            margin-bottom: 8px;
         }
-
-        .breach-icon {
-            width: 24px;
-            height: 24px;
-            background-color: var(--accent-red);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.8rem;
-        }
-
         .breach-name {
-            font-weight: 500;
+            font-weight: 600;
+            color: var(--accent-blue);
         }
-
         .breach-type {
+            padding: 4px 10px;
+            background: rgba(66, 133, 244, 0.2);
+            color: var(--accent-blue);
+            border-radius: 20px;
             font-size: 0.8rem;
-            padding: 0.25rem 0.5rem;
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--accent-red);
-            border-radius: 4px;
         }
-
         .breach-details {
-            padding: 0 0.75rem 0.75rem;
-            font-size: 0.85rem;
-            color: var(--muted-gray);
-            display: none;
-        }
-
-        .breach-details.active {
-            display: block;
-        }
-
-        /* ===== MAP CONTAINER ===== */
-        #map-container {
-            height: 300px;
-            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            max-height: 0;
             overflow: hidden;
-            margin-bottom: 1rem;
+            transition: max-height 0.3s;
         }
-
-        .map-controls {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
+        .breach-item.expanded .breach-details {
+            max-height: 200px;
+            margin-top: 10px;
         }
-
-        .map-btn {
-            padding: 0.5rem 1rem;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--light-gray);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.85rem;
+        #map {
+            height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid var(--border-gray);
         }
-
-        .map-btn.active {
-            background-color: var(--accent-blue);
-            color: white;
-        }
-
-        .location-info {
+        .geo-info {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .geo-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 6px;
             font-size: 0.9rem;
         }
-
-        .location-field {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .field-label {
-            color: var(--muted-gray);
+        .geo-label {
+            color: var(--text-secondary);
             font-size: 0.8rem;
-            margin-bottom: 0.25rem;
+            margin-bottom: 4px;
         }
-
-        /* ===== DETAIL CARDS ===== */
-        .detail-grid {
+        .details-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin-top: 2rem;
+            gap: 20px;
         }
-
-        .detail-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
+        .info-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-gray);
+            padding: 20px;
         }
-
-        .detail-card-header {
+        .info-row {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-
-        .detail-title {
-            font-size: 1.2rem;
+        .info-label {
+            color: var(--text-secondary);
+        }
+        .info-value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+        .flag {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
             font-weight: 600;
         }
-
-        /* ===== IP/ASN CARD ===== */
-        .ip-info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+        .flag-yes {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success-green);
         }
-
-        .ip-field {
-            display: flex;
-            flex-direction: column;
+        .flag-no {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger-red);
         }
-
-        .flag-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .flag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .flag.true {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--accent-green);
-        }
-
-        .flag.false {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--accent-red);
-        }
-
-        /* ===== PHONE CARD ===== */
-        .phone-info {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .phone-number {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-
         .phone-actions {
             display: flex;
-            gap: 0.75rem;
-            margin-top: 0.5rem;
+            gap: 10px;
+            margin-top: 15px;
         }
-
         .action-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-gray);
+            background: var(--secondary-dark);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--light-gray);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.85rem;
+            gap: 8px;
         }
-
         .action-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
         }
-
-        .action-btn.primary {
-            background-color: var(--accent-blue);
-            color: white;
-            border-color: var(--accent-blue);
-        }
-
-        .verification-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--accent-green);
-            border-radius: 20px;
-            font-size: 0.85rem;
-            margin-top: 0.5rem;
-        }
-
-        /* ===== EMAIL LEAKS ===== */
         .leak-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
+            gap: 10px;
+            margin-top: 15px;
         }
-
         .leak-tag {
-            padding: 0.5rem 1rem;
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--accent-red);
+            background: rgba(255, 107, 53, 0.1);
+            color: var(--accent-orange);
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: var(--transition);
+            transition: all 0.2s;
             border: 1px solid transparent;
         }
-
         .leak-tag:hover {
-            background-color: rgba(231, 76, 60, 0.2);
+            background: rgba(255, 107, 53, 0.2);
+            border-color: var(--accent-orange);
         }
-
         .leak-tag.active {
-            background-color: var(--accent-red);
+            background: var(--accent-orange);
             color: white;
         }
-
-        .leak-details {
-            background-color: rgba(255, 255, 255, 0.02);
-            border-radius: 6px;
-            padding: 1rem;
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .leak-details.active {
-            display: block;
-        }
-
-        .export-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--accent-orange);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .export-btn:hover {
-            background-color: #ff8c42;
-        }
-
-        /* ===== DOMAIN CARD ===== */
-        .domain-info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .ssl-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .ssl-valid {
-            background-color: rgba(46, 204, 113, 0.1);
-            color: var(--accent-green);
-        }
-
-        .ssl-invalid {
-            background-color: rgba(231, 76, 60, 0.1);
-            color: var(--accent-red);
-        }
-
-        .whois-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--accent-blue);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        /* ===== PROGRESS BAR ===== */
-        .progress-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(10, 10, 15, 0.95);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
         .progress-container {
-            width: 500px;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+            border: 1px solid var(--border-gray);
+            display: none;
         }
-
         .progress-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            margin-bottom: 15px;
         }
-
-        .progress-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-        }
-
-        .progress-percent {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-orange);
-        }
-
         .progress-bar {
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            height: 10px;
+            background: var(--secondary-dark);
+            border-radius: 5px;
             overflow: hidden;
-            margin-bottom: 1.5rem;
+            margin-bottom: 20px;
         }
-
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-orange), #ff8c42);
-            border-radius: 4px;
+            background: linear-gradient(90deg, var(--accent-orange), #ff8b35);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s;
         }
-
         .progress-steps {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 15px;
         }
-
-        .progress-step {
+        .step {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            border-radius: 6px;
-            background-color: rgba(255, 255, 255, 0.02);
+            gap: 15px;
         }
-
         .step-icon {
-            width: 24px;
-            height: 24px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            background-color: rgba(255, 255, 255, 0.1);
+            background: var(--secondary-dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            color: var(--text-secondary);
         }
-
-        .step-icon.completed {
-            background-color: var(--accent-green);
+        .step.active .step-icon {
+            background: var(--accent-orange);
             color: white;
         }
-
-        .step-icon.active {
-            background-color: var(--accent-orange);
+        .step.completed .step-icon {
+            background: var(--success-green);
             color: white;
         }
-
-        .step-info {
+        .step-text {
             flex: 1;
         }
-
         .step-name {
-            font-weight: 500;
-        }
-
-        .step-status {
-            font-size: 0.8rem;
-            color: var(--muted-gray);
-        }
-
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal {
-            width: 600px;
-            max-width: 90%;
-            max-height: 90vh;
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
             font-weight: 600;
+            margin-bottom: 3px;
         }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--muted-gray);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: 4px;
+        .step-desc {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
-
-        .modal-close:hover {
-            color: var(--light-gray);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 1px solid var(--border-color);
+        .export-actions {
             display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
+            gap: 15px;
+            margin-top: 20px;
         }
-
-        /* ===== TOOLTIPS ===== */
-        .tooltip-container {
+        .export-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+            background: var(--secondary-dark);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .export-btn:hover {
+            border-color: var(--accent-orange);
+            color: var(--accent-orange);
+        }
+        .tooltip {
             position: relative;
             display: inline-block;
         }
-
-        .tooltip-icon {
-            color: var(--muted-gray);
-            cursor: help;
-            margin-left: 0.25rem;
-        }
-
-        .tooltip {
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background: var(--secondary-dark);
+            color: var(--text-primary);
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-gray);
             position: absolute;
-            bottom: 100%;
+            z-index: 1000;
+            bottom: 125%;
             left: 50%;
             transform: translateX(-50%);
-            background-color: var(--secondary-dark);
-            color: var(--light-gray);
-            padding: 0.75rem;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            width: 250px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            z-index: 100;
-            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
         }
-
-        .tooltip-container:hover .tooltip {
-            display: block;
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
-
-        /* ===== SKELETON LOADING ===== */
         .skeleton {
-            background: linear-gradient(90deg, 
-                rgba(255, 255, 255, 0.05) 25%, 
-                rgba(255, 255, 255, 0.1) 50%, 
-                rgba(255, 255, 255, 0.05) 75%);
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
             background-size: 200% 100%;
             animation: loading 1.5s infinite;
             border-radius: 4px;
         }
-
-        .skeleton-text {
-            height: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .skeleton-title {
-            height: 1.5rem;
-            width: 60%;
-            margin-bottom: 1rem;
-        }
-
-        /* ===== ANIMATIONS ===== */
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-        }
-
         @keyframes loading {
-            0% {
-                background-position: 200% 0;
-            }
-            100% {
-                background-position: -200% 0;
-            }
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 1200px) {
-            .osint-grid {
+            .overview-grid, .stats-row, .details-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
         }
-
-        @media (max-width: 992px) {
-            .app-container {
-                grid-template-columns: 1fr;
-                grid-template-areas: 
-                    "topbar"
-                    "main";
-            }
-            
-            .sidebar {
-                position: fixed;
-                top: 70px;
-                left: -250px;
-                height: calc(100vh - 70px);
-                z-index: 500;
-                transition: left 0.3s ease;
-            }
-            
-            .sidebar.active {
-                left: 0;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .search-container {
-                max-width: 300px;
-            }
-        }
-
         @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .sidebar {
+                display: none;
             }
-            
-            .osint-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .topbar {
-                padding: 0 1rem;
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
             }
-            
-            .search-container {
-                margin: 0 1rem;
-                max-width: 200px;
+            .search-box {
+                max-width: 100%;
             }
-            
-            .vpn-status {
-                display: none;
-            }
-            
-            .main-content {
-                padding: 1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .search-container {
-                display: none;
-            }
-            
-            .topbar-actions {
-                gap: 0.75rem;
-            }
-            
-            .scan-btn span {
-                display: none;
-            }
-            
-            .scan-btn {
-                padding: 0.75rem;
-            }
-            
-            .ip-info-grid,
-            .domain-info-grid,
-            .location-info {
+            .overview-grid, .stats-row, .details-grid {
                 grid-template-columns: 1fr;
             }
-        }
-
-        /* ===== UTILITY CLASSES ===== */
-        .text-success {
-            color: var(--accent-green);
-        }
-
-        .text-warning {
-            color: var(--warning);
-        }
-
-        .text-danger {
-            color: var(--accent-red);
-        }
-
-        .text-muted {
-            color: var(--muted-gray);
-        }
-
-        .mb-1 {
-            margin-bottom: 0.5rem;
-        }
-
-        .mb-2 {
-            margin-bottom: 1rem;
-        }
-
-        .mb-3 {
-            margin-bottom: 1.5rem;
-        }
-
-        .mt-1 {
-            margin-top: 0.5rem;
-        }
-
-        .mt-2 {
-            margin-top: 1rem;
-        }
-
-        .mt-3 {
-            margin-top: 1.5rem;
-        }
-
-        .d-flex {
-            display: flex;
-        }
-
-        .align-center {
-            align-items: center;
-        }
-
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .gap-1 {
-            gap: 0.5rem;
-        }
-
-        .gap-2 {
-            gap: 1rem;
-        }
-
-        .gap-3 {
-            gap: 1.5rem;
-        }
-
-        .w-100 {
-            width: 100%;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* ===== DARK SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--primary-dark);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-color);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-orange);
+            .geo-info {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Progress Overlay -->
-    <div class="progress-overlay" id="progressOverlay">
-        <div class="progress-container">
-            <div class="progress-header">
-                <div class="progress-title">Scanning Target</div>
-                <div class="progress-percent" id="progressPercent">0%</div>
+    <div class="topbar">
+        <div class="logo">
+            <i class="fas fa-search"></i>
+            <span>Probiv Bot</span>
+        </div>
+        <div class="search-box">
+            <input type="text" placeholder="john.doe@example.com" id="searchInput">
+        </div>
+        <div class="topbar-right">
+            <div class="vpn-status">
+                <i class="fas fa-shield-alt"></i> VPN Active
             </div>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-steps" id="progressSteps">
-                <!-- Steps will be added by JavaScript -->
-            </div>
+            <button class="settings-btn" id="settingsBtn">
+                <i class="fas fa-cog"></i>
+            </button>
+            <button class="scan-btn" id="scanBtn">
+                <i class="fas fa-play"></i> START SCAN
+            </button>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <div class="modal-title">Leak Details</div>
-                <button class="modal-close" id="modalClose">&times;</button>
+    <div class="container">
+        <div class="sidebar">
+            <div class="menu-section">
+                <div class="menu-title">Main</div>
+                <a href="#" class="menu-item active">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
             </div>
-            <div class="modal-body" id="modalBody">
-                <!-- Modal content will be added by JavaScript -->
+            <div class="menu-section">
+                <div class="menu-title">Investigations</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-user-secret"></i> Target Profile: John Doe
+                </a>
             </div>
-            <div class="modal-footer">
-                <button class="action-btn" id="exportLeakBtn">Export as CSV</button>
-                <button class="action-btn primary" id="closeModalBtn">Close</button>
+            <div class="menu-section">
+                <div class="menu-title">Tools</div>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-user"></i> Username Search
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-phone"></i> Phone Lookup
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-envelope"></i> Email Search
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-network-wired"></i> IP Address Scan
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-globe"></i> Domain Info
+                </a>
+            </div>
+            <div class="menu-section">
+                <div class="menu-title">Modules</div>
+                <a href="#" class="menu-item">
+                    <i class="fab fa-twitter"></i> Social Networks
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-database"></i> Leaked Databases
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-map-marker-alt"></i> Geo Location
+                </a>
             </div>
         </div>
-    </div>
 
-    <!-- Main App Container -->
-    <div class="app-container">
-        <!-- Topbar -->
-        <header class="topbar">
-            <div class="logo-container">
-                <div class="logo-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="logo-text">Probiv Bot</div>
-            </div>
-            
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-input" id="searchInput" placeholder="john.doe@example.com">
-            </div>
-            
-            <div class="topbar-actions">
-                <div class="vpn-status">
-                    <div class="vpn-indicator"></div>
-                    <span>VPN Active</span>
-                </div>
-                <button class="settings-btn" id="settingsBtn">
-                    <i class="fas fa-cog"></i>
-                </button>
-                <button class="scan-btn" id="scanBtn">
-                    <i class="fas fa-play"></i>
-                    <span>START SCAN</span>
-                </button>
-            </div>
-        </header>
-
-        <!-- Sidebar -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-section">
-                <div class="nav-menu">
-                    <a href="#" class="nav-item active">
-                        <i class="fas fa-tachometer-alt nav-icon"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="section-title">Investigations</div>
-                <div class="investigation-target">
-                    <div class="target-name">John Doe</div>
-                    <div class="target-email">john.doe@example.com</div>
-                </div>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="section-title">Tools</div>
-                <div class="nav-menu">
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-user nav-icon"></i>
-                        <span>Username Search</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-phone nav-icon"></i>
-                        <span>Phone Lookup</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-envelope nav-icon"></i>
-                        <span>Email Search</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-network-wired nav-icon"></i>
-                        <span>IP Address Scan</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-globe nav-icon"></i>
-                        <span>Domain Info</span>
-                    </a>
-                </div>
-            </div>
-            
-            <div class="sidebar-section">
-                <div class="section-title">Modules</div>
-                <div class="nav-menu">
-                    <a href="#" class="nav-item">
-                        <i class="fab fa-twitter nav-icon"></i>
-                        <span>Social Networks</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-database nav-icon"></i>
-                        <span>Leaked Databases</span>
-                    </a>
-                    <a href="#" class="nav-item">
-                        <i class="fas fa-map-marker-alt nav-icon"></i>
-                        <span>Geo Location</span>
-                    </a>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-header">
-                <h1 class="page-title">OSINT Dashboard</h1>
-                <div class="timestamp" id="timestamp">Last updated: Just now</div>
-            </div>
-            
-            <!-- Stats Cards -->
-            <div class="stats-grid">
+        <div class="main-content">
+            <div class="stats-row">
                 <div class="stat-card">
                     <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="socialCount">32</div>
-                            <div class="stat-label">Social Accounts Found</div>
-                        </div>
-                        <div class="stat-icon social">
+                        <div class="stat-icon">
                             <i class="fab fa-twitter"></i>
                         </div>
+                        <div>
+                            <div class="stat-title">Social Accounts Found</div>
+                            <div class="stat-value" id="socialCount">14</div>
+                            <div class="stat-sub">Across 8 platforms</div>
+                        </div>
                     </div>
-                    <div class="stat-details">7 platforms with active profiles</div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="leakCount">8</div>
-                            <div class="stat-label">Leaked Databases</div>
-                        </div>
-                        <div class="stat-icon leak">
+                        <div class="stat-icon">
                             <i class="fas fa-database"></i>
                         </div>
+                        <div>
+                            <div class="stat-title">Leaked Databases</div>
+                            <div class="stat-value" id="leakCount">8</div>
+                            <div class="stat-sub">3,240 total records</div>
+                        </div>
                     </div>
-                    <div class="stat-details">3,240 total records exposed</div>
                 </div>
-                
                 <div class="stat-card">
                     <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="phoneNumber">+1 (555) 123-4567</div>
-                            <div class="stat-label">Phone Records</div>
-                        </div>
-                        <div class="stat-icon phone">
+                        <div class="stat-icon">
                             <i class="fas fa-phone"></i>
                         </div>
-                    </div>
-                    <div class="stat-details">Verizon • Active • USA</div>
-                </div>
-            </div>
-            
-            <!-- OSINT Grid -->
-            <div class="osint-grid">
-                <!-- Social Media Card -->
-                <div class="grid-card">
-                    <div class="card-header">
-                        <div class="card-title">Social Media Profiles</div>
-                        <div class="card-actions">
-                            <button class="card-action-btn" title="Refresh">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                            <button class="card-action-btn" title="Export">
-                                <i class="fas fa-download"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="social-list" id="socialList">
-                            <!-- Social items will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Data Breaches Card -->
-                <div class="grid-card">
-                    <div class="card-header">
-                        <div class="card-title">Data Breaches</div>
-                        <div class="card-actions">
-                            <button class="card-action-btn" title="Show All">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="breach-list" id="breachList">
-                            <!-- Breach items will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Geo Location Card -->
-                <div class="grid-card">
-                    <div class="card-header">
-                        <div class="card-title">Geo Location</div>
-                        <div class="card-actions">
-                            <button class="card-action-btn" id="mapStreetBtn" title="Street View">
-                                <i class="fas fa-road"></i>
-                            </button>
-                            <button class="card-action-btn active" id="mapSatelliteBtn" title="Satellite View">
-                                <i class="fas fa-satellite"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div id="map-container"></div>
-                        <div class="location-info">
-                            <div class="location-field">
-                                <span class="field-label">City</span>
-                                <span id="city">New York</span>
-                            </div>
-                            <div class="location-field">
-                                <span class="field-label">State</span>
-                                <span id="state">New York</span>
-                            </div>
-                            <div class="location-field">
-                                <span class="field-label">Country</span>
-                                <span id="country">United States</span>
-                            </div>
-                            <div class="location-field">
-                                <span class="field-label">ZIP</span>
-                                <span id="zip">10001</span>
-                            </div>
-                            <div class="location-field">
-                                <span class="field-label">Local Time</span>
-                                <span id="localTime">14:30 EST</span>
-                            </div>
-                            <div class="location-field">
-                                <span class="field-label">Timezone</span>
-                                <span id="timezone">EST (UTC-5)</span>
-                            </div>
+                        <div>
+                            <div class="stat-title">Phone Records</div>
+                            <div class="stat-value" id="phoneNumber">+1 (555) 123-4567</div>
+                            <div class="stat-sub">Verizon • Active</div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Detail Cards -->
-            <div class="detail-grid">
-                <!-- IP/ASN Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <div class="detail-title">IP / ASN Information</div>
-                        <button class="action-btn" id="copyIpBtn">
-                            <i class="fas fa-copy"></i>
-                            Copy
-                        </button>
+
+            <div class="overview-grid">
+                <div class="grid-card">
+                    <div class="grid-title">
+                        <i class="fas fa-user-circle"></i> Social Media Profiles
                     </div>
-                    <div class="ip-info-grid">
-                        <div class="ip-field">
-                            <span class="field-label">IP Address</span>
-                            <span id="ipAddress">192.168.1.1</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">ASN</span>
-                            <span id="asn">AS12345</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Hostname</span>
-                            <span id="hostname">server-192-168-1-1.nyc.example.com</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Range</span>
-                            <span id="ipRange">192.168.1.0/24</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Company</span>
-                            <span id="company">Example Corp Inc.</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Flags</span>
-                            <div class="flag-container">
-                                <span class="flag true" title="Anycast">Anycast</span>
-                                <span class="flag false" title="Privacy">Privacy</span>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="social-list" id="socialList"></div>
                 </div>
-                
-                <!-- Phone Info Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <div class="detail-title">Phone Information</div>
-                        <div class="verification-badge">
-                            <i class="fas fa-check-circle"></i>
-                            Number Verified
-                        </div>
+                <div class="grid-card">
+                    <div class="grid-title">
+                        <i class="fas fa-exclamation-triangle"></i> Data Breaches
                     </div>
-                    <div class="phone-info">
-                        <div class="phone-number" id="phoneDisplay">+1 (555) 123-4567</div>
-                        <div class="d-flex align-center gap-2 mb-2">
-                            <span class="field-label">Carrier:</span>
-                            <span id="carrier">Verizon Wireless</span>
-                        </div>
-                        <div class="d-flex align-center gap-2 mb-2">
-                            <span class="field-label">Truecaller:</span>
-                            <span id="truecallerName">John Doe (Business)</span>
-                        </div>
-                        <div class="phone-actions">
-                            <button class="action-btn" id="copyPhoneBtn">
-                                <i class="fas fa-copy"></i>
-                                Copy
-                            </button>
-                            <button class="action-btn" id="callBtn">
-                                <i class="fas fa-phone"></i>
-                                Call
-                            </button>
-                            <button class="action-btn" id="smsBtn">
-                                <i class="fas fa-sms"></i>
-                                SMS
-                            </button>
-                        </div>
-                    </div>
+                    <div class="breach-list" id="breachList"></div>
                 </div>
-                
-                <!-- Email Leaks Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <div class="detail-title">Email Leaks</div>
-                        <button class="export-btn" id="exportAllLeaksBtn">
-                            <i class="fas fa-download"></i>
-                            Export All
-                        </button>
+                <div class="grid-card">
+                    <div class="grid-title">
+                        <i class="fas fa-map-marked-alt"></i> Geo Location
                     </div>
-                    <div class="leak-tags" id="leakTags">
-                        <!-- Leak tags will be populated by JavaScript -->
-                    </div>
-                    <div class="leak-details" id="leakDetails">
-                        <!-- Leak details will be populated by JavaScript -->
-                    </div>
+                    <div id="map"></div>
+                    <div class="geo-info" id="geoInfo"></div>
                 </div>
-                
-                <!-- Domain Details Card -->
-                <div class="detail-card">
-                    <div class="detail-card-header">
-                        <div class="detail-title">Domain Details</div>
-                        <button class="whois-btn" id="whoisBtn">
-                            <i class="fas fa-external-link-alt"></i>
-                            Whois
-                        </button>
+            </div>
+
+            <div class="details-grid">
+                <div class="info-card">
+                    <div class="grid-title">
+                        <i class="fas fa-network-wired"></i> IP / ASN Details
                     </div>
-                    <div class="domain-info-grid">
-                        <div class="ip-field">
-                            <span class="field-label">Domain</span>
-                            <span id="domain">example.com</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Registrar</span>
-                            <span id="registrar">GoDaddy Inc.</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Created</span>
-                            <span id="createdDate">2020-01-15</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Expires</span>
-                            <span id="expiryDate">2025-01-15</span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">SSL Status</span>
-                            <span class="ssl-status ssl-valid" id="sslStatus">
-                                <i class="fas fa-lock"></i>
-                                Valid
-                            </span>
-                        </div>
-                        <div class="ip-field">
-                            <span class="field-label">Nameservers</span>
-                            <span id="nameservers">ns1.example.com, ns2.example.com</span>
-                        </div>
+                    <div id="ipDetails"></div>
+                </div>
+                <div class="info-card">
+                    <div class="grid-title">
+                        <i class="fas fa-phone"></i> Phone Information
+                    </div>
+                    <div id="phoneDetails"></div>
+                    <div class="phone-actions">
+                        <button class="action-btn" id="copyPhone">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="action-btn" id="callPhone">
+                            <i class="fas fa-phone"></i> Call
+                        </button>
+                        <button class="action-btn" id="smsPhone">
+                            <i class="fas fa-sms"></i> SMS
+                        </button>
                     </div>
                 </div>
             </div>
-        </main>
+
+            <div class="details-grid">
+                <div class="info-card">
+                    <div class="grid-title">
+                        <i class="fas fa-envelope"></i> Email Leaks
+                    </div>
+                    <div class="leak-tags" id="leakTags"></div>
+                    <div id="leakDetails"></div>
+                </div>
+                <div class="info-card">
+                    <div class="grid-title">
+                        <i class="fas fa-globe"></i> Domain Details
+                    </div>
+                    <div id="domainDetails"></div>
+                    <button class="action-btn" id="whoisBtn" style="margin-top: 15px;">
+                        <i class="fas fa-external-link-alt"></i> Whois Lookup
+                    </button>
+                </div>
+            </div>
+
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-header">
+                    <div>
+                        <h3>Scan Progress</h3>
+                        <div id="progressPercent">0%</div>
+                    </div>
+                    <div id="scanTimer">00:00</div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-steps" id="progressSteps"></div>
+            </div>
+
+            <div class="export-actions">
+                <button class="export-btn" id="exportPdf">
+                    <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+                <button class="export-btn" id="exportJson">
+                    <i class="fas fa-file-code"></i> Export JSON
+                </button>
+                <button class="export-btn" id="exportCsv">
+                    <i class="fas fa-file-csv"></i> Export CSV
+                </button>
+                <button class="export-btn" id="exportLogs">
+                    <i class="fas fa-clipboard-list"></i> Export Logs
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script>
-        // ===== MOCK DATA =====
         const mockData = {
-            socialProfiles: [
-                { platform: "Twitter", icon: "fab fa-twitter", color: "#1DA1F2", username: "@johndoe", displayName: "John Doe", status: "found", url: "https://twitter.com/johndoe" },
-                { platform: "Facebook", icon: "fab fa-facebook", color: "#4267B2", username: "john.doe.7", displayName: "John Doe", status: "found", url: "https://facebook.com/john.doe.7" },
-                { platform: "Instagram", icon: "fab fa-instagram", color: "#E1306C", username: "@john.doe", displayName: "John Doe", status: "found", url: "https://instagram.com/john.doe" },
-                { platform: "LinkedIn", icon: "fab fa-linkedin", color: "#0077B5", username: "john-doe", displayName: "John Doe", status: "found", url: "https://linkedin.com/in/john-doe" },
-                { platform: "GitHub", icon: "fab fa-github", color: "#333", username: "johndoe", displayName: "John Doe", status: "found", url: "https://github.com/johndoe" },
-                { platform: "Telegram", icon: "fab fa-telegram", color: "#0088cc", username: "@johndoe", displayName: "John Doe", status: "missing", url: null },
-                { platform: "Reddit", icon: "fab fa-reddit", color: "#FF4500", username: "u/johndoe", displayName: "John Doe", status: "found", url: "https://reddit.com/u/johndoe" }
+            social: [
+                { platform: "Twitter", icon: "fab fa-twitter", color: "#1DA1F2", user: "@johndoe", name: "John Doe", status: "found" },
+                { platform: "Facebook", icon: "fab fa-facebook", color: "#1877F2", user: "johndoe", name: "John Doe", status: "found" },
+                { platform: "Instagram", icon: "fab fa-instagram", color: "#E4405F", user: "@johndoe_real", name: "John Doe", status: "found" },
+                { platform: "LinkedIn", icon: "fab fa-linkedin", color: "#0A66C2", user: "in/johndoe", name: "John Doe", status: "found" },
+                { platform: "GitHub", icon: "fab fa-github", color: "#181717", user: "johndoe", name: "John Doe", status: "found" },
+                { platform: "Telegram", icon: "fab fa-telegram", color: "#26A5E4", user: "@johndoe", name: "John Doe", status: "missing" },
+                { platform: "VK", icon: "fab fa-vk", color: "#4C75A3", user: "id123456", name: "John Doe", status: "found" },
+                { platform: "Steam", icon: "fab fa-steam", color: "#000000", user: "johndoe_gamer", name: "John Doe", status: "missing" }
             ],
-            dataBreaches: [
-                { source: "Dehashed", type: "Password Breach", date: "2023-05-15", details: "Credentials leaked from a major social media platform. Contains email, hashed password, and username." },
-                { source: "HaveIBeenPwned", type: "Exposed Emails", date: "2022-11-30", details: "Email address found in 3 different breaches. Data includes personal information and login credentials." },
-                { source: "Snusbase", type: "Leaked Records", date: "2023-01-20", details: "Complete user profile including name, address, phone number, and encrypted password." },
-                { source: "BreachForums", type: "Database Dump", date: "2023-07-10", details: "Full database containing 2.4M user records from an e-commerce platform." }
+            breaches: [
+                { source: "Dehashed", type: "Password Breach", details: "Leaked in 2021 Adobe breach, contains email and hashed password" },
+                { source: "HaveIBeenPwned", type: "Exposed Emails", details: "Found in Collection #1 (2019), 772M records total" },
+                { source: "Snusbase", type: "Leaked Records", details: "Private database dump from 2023, includes IP and location data" },
+                { source: "BreachForums", type: "Credentials", details: "Credential stuffing list from 2022, contains username/password pairs" }
             ],
-            emailLeaks: [
-                { name: "Collection #1", count: "772,904,991", date: "2019-01", details: "One of the largest collections of email/password pairs circulated on hacking forums." },
-                { name: "Combo List", count: "41,000,000", date: "2020-03", details: "Combination list of emails and passwords from various sources." },
-                { name: "DarkWeb Leak", count: "12,500", date: "2023-06", details: "Recently leaked corporate emails with internal documents." },
-                { name: "Social Media Scrape", count: "235,000", date: "2022-09", details: "Scraped user data from social media platforms with email addresses." }
-            ],
-            location: {
+            geo: {
                 city: "New York",
-                state: "New York",
+                region: "NY",
                 country: "United States",
                 zip: "10001",
-                lat: 40.7128,
-                lng: -74.0060,
-                timezone: "EST (UTC-5)"
+                timezone: "EST",
+                localTime: "14:30:45",
+                coords: [40.7128, -74.0060]
             },
-            ipInfo: {
-                ip: "192.168.1.1",
-                asn: "AS12345",
-                hostname: "server-192-168-1-1.nyc.example.com",
-                range: "192.168.1.0/24",
-                company: "Example Corp Inc.",
+            ip: {
+                address: "192.168.1.100",
+                asn: "AS15169",
+                hostname: "google-public-dns-a.google.com",
+                range: "192.168.0.0/16",
+                company: "Google LLC",
                 anycast: true,
                 privacy: false
             },
-            phoneInfo: {
+            phone: {
                 number: "+15551234567",
-                formatted: "+1 (555) 123-4567",
                 carrier: "Verizon Wireless",
-                truecaller: "John Doe (Business)",
-                verified: true
+                truecaller: "John Doe",
+                valid: true
             },
-            domainInfo: {
-                domain: "example.com",
-                registrar: "GoDaddy Inc.",
-                created: "2020-01-15",
-                expires: "2025-01-15",
-                ssl: "valid",
-                nameservers: "ns1.example.com, ns2.example.com"
-            },
-            scanSteps: [
-                { name: "Username Lookup", status: "pending" },
-                { name: "Email Verification", status: "pending" },
-                { name: "Social Media Scan", status: "pending" },
-                { name: "IP Address Scan", status: "pending" },
-                { name: "Data Breach Check", status: "pending" },
-                { name: "Phone Number Lookup", status: "pending" },
-                { name: "Domain Analysis", status: "pending" },
-                { name: "Geolocation", status: "pending" },
-                { name: "Report Generation", status: "pending" }
-            ]
+            leaks: [
+                { name: "Collection #1", count: "772M records", date: "2019-01-01" },
+                { name: "Combo List", count: "1.2B combos", date: "2020-03-15" },
+                { name: "DarkWeb Leak", count: "5.4M emails", date: "2023-11-20" },
+                { name: "Adobe Breach", count: "153M accounts", date: "2013-10-04" }
+            ],
+            domain: {
+                name: "example.com",
+                registrar: "GoDaddy",
+                created: "1995-08-15",
+                ssl: true,
+                expiry: "2025-12-31"
+            }
         };
 
-        // ===== GLOBAL STATE =====
-        let currentMap = null;
-        let activeLeak = null;
-        let scanProgress = 0;
+        const scanSteps = [
+            { name: "Username Lookup", desc: "Searching 50+ platforms for target username" },
+            { name: "IP Address Scan", desc: "Geolocation and ISP information retrieval" },
+            { name: "Data Breach Search", desc: "Scanning 15+ leaked databases for matches" },
+            { name: "Social Media Profiling", desc: "Extracting profile metadata and connections" },
+            { name: "Phone Number Analysis", desc: "Carrier lookup and number validation" },
+            { name: "Domain Reconnaissance", desc: "WHOIS lookup and DNS records analysis" },
+            { name: "Report Generation", desc: "Compiling all data into final report" }
+        ];
+
+        let map = null;
         let scanInterval = null;
-        let socketMockInterval = null;
+        let scanStartTime = null;
+        let currentStep = 0;
+        let progress = 0;
 
-        // ===== DOM ELEMENTS =====
-        const elements = {
-            // Progress
-            progressOverlay: document.getElementById('progressOverlay'),
-            progressPercent: document.getElementById('progressPercent'),
-            progressFill: document.getElementById('progressFill'),
-            progressSteps: document.getElementById('progressSteps'),
-            
-            // Modal
-            modalOverlay: document.getElementById('modalOverlay'),
-            modalBody: document.getElementById('modalBody'),
-            modalClose: document.getElementById('modalClose'),
-            closeModalBtn: document.getElementById('closeModalBtn'),
-            exportLeakBtn: document.getElementById('exportLeakBtn'),
-            
-            // Buttons
-            scanBtn: document.getElementById('scanBtn'),
-            settingsBtn: document.getElementById('settingsBtn'),
-            copyIpBtn: document.getElementById('copyIpBtn'),
-            copyPhoneBtn: document.getElementById('copyPhoneBtn'),
-            callBtn: document.getElementById('callBtn'),
-            smsBtn: document.getElementById('smsBtn'),
-            exportAllLeaksBtn: document.getElementById('exportAllLeaksBtn'),
-            whoisBtn: document.getElementById('whoisBtn'),
-            mapStreetBtn: document.getElementById('mapStreetBtn'),
-            mapSatelliteBtn: document.getElementById('mapSatelliteBtn'),
-            
-            // Data displays
-            socialList: document.getElementById('socialList'),
-            breachList: document.getElementById('breachList'),
-            leakTags: document.getElementById('leakTags'),
-            leakDetails: document.getElementById('leakDetails'),
-            searchInput: document.getElementById('searchInput'),
-            timestamp: document.getElementById('timestamp'),
-            
-            // Counters
-            socialCount: document.getElementById('socialCount'),
-            leakCount: document.getElementById('leakCount'),
-            phoneNumber: document.getElementById('phoneNumber')
-        };
-
-        // ===== INITIALIZATION =====
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeApp();
-            setupEventListeners();
-            simulateLiveUpdates();
-        });
-
-        // ===== APP INITIALIZATION =====
-        function initializeApp() {
-            // Render social profiles
-            renderSocialProfiles();
-            
-            // Render data breaches
-            renderDataBreaches();
-            
-            // Render email leaks
-            renderEmailLeaks();
-            
-            // Initialize map
-            initializeMap();
-            
-            // Update timestamp
-            updateTimestamp();
-            
-            // Setup tooltips
-            setupTooltips();
-            
-            // Initialize mock WebSocket
-            initMockWebSocket();
+        function initMap() {
+            map = L.map('map').setView(mockData.geo.coords, 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker(mockData.geo.coords).addTo(map)
+                .bindPopup(`<b>${mockData.geo.city}</b><br>${mockData.geo.country}`)
+                .openPopup();
         }
 
-        // ===== RENDER FUNCTIONS =====
-        function renderSocialProfiles() {
-            elements.socialList.innerHTML = '';
-            
-            mockData.socialProfiles.forEach(profile => {
-                const socialItem = document.createElement('div');
-                socialItem.className = 'social-item';
-                socialItem.dataset.url = profile.url || '#';
-                
-                socialItem.innerHTML = `
-                    <div class="social-icon" style="background-color: ${profile.color}">
-                        <i class="${profile.icon}"></i>
+        function renderSocialList() {
+            const container = document.getElementById('socialList');
+            container.innerHTML = mockData.social.map(item => `
+                <div class="social-item" data-platform="${item.platform}">
+                    <div class="social-icon" style="background: ${item.color}">
+                        <i class="${item.icon}"></i>
                     </div>
-                    <div class="social-info">
-                        <div class="social-name">${profile.displayName}</div>
-                        <div class="social-username">${profile.username}</div>
+                    <div class="social-name">${item.platform}</div>
+                    <div class="social-user">${item.user}</div>
+                    <div class="social-status status-${item.status}">
+                        ${item.status === 'found' ? '✓ Found' : '— Missing'}
                     </div>
-                    <div class="social-status ${profile.status === 'found' ? 'status-found' : 'status-missing'}">
-                        ${profile.status === 'found' ? 'Found' : 'Missing'}
-                    </div>
-                `;
-                
-                if (profile.url) {
-                    socialItem.addEventListener('click', () => {
-                        window.open(profile.url, '_blank');
-                    });
-                }
-                
-                elements.socialList.appendChild(socialItem);
-            });
+                </div>
+            `).join('');
         }
 
-        function renderDataBreaches() {
-            elements.breachList.innerHTML = '';
-            
-            mockData.dataBreaches.forEach((breach, index) => {
-                const breachItem = document.createElement('div');
-                breachItem.className = 'breach-item';
-                
-                breachItem.innerHTML = `
-                    <div class="breach-header" data-index="${index}">
-                        <div class="breach-source">
-                            <div class="breach-icon">
-                                <i class="fas fa-database"></i>
-                            </div>
-                            <div class="breach-name">${breach.source}</div>
-                        </div>
+        function renderBreachList() {
+            const container = document.getElementById('breachList');
+            container.innerHTML = mockData.breaches.map((breach, i) => `
+                <div class="breach-item" data-index="${i}">
+                    <div class="breach-source">
+                        <div class="breach-name">${breach.source}</div>
                         <div class="breach-type">${breach.type}</div>
                     </div>
-                    <div class="breach-details" id="breachDetails${index}">
-                        <div class="mb-1"><strong>Date:</strong> ${breach.date}</div>
-                        <div>${breach.details}</div>
-                    </div>
-                `;
-                
-                const header = breachItem.querySelector('.breach-header');
-                const details = breachItem.querySelector(`#breachDetails${index}`);
-                
-                header.addEventListener('click', () => {
-                    details.classList.toggle('active');
-                });
-                
-                elements.breachList.appendChild(breachItem);
-            });
-        }
-
-        function renderEmailLeaks() {
-            elements.leakTags.innerHTML = '';
-            elements.leakDetails.innerHTML = '';
-            
-            mockData.emailLeaks.forEach((leak, index) => {
-                // Create tag
-                const leakTag = document.createElement('div');
-                leakTag.className = 'leak-tag';
-                leakTag.textContent = leak.name;
-                leakTag.dataset.index = index;
-                
-                leakTag.addEventListener('click', () => {
-                    // Remove active class from all tags
-                    document.querySelectorAll('.leak-tag').forEach(tag => {
-                        tag.classList.remove('active');
-                    });
-                    
-                    // Add active class to clicked tag
-                    leakTag.classList.add('active');
-                    
-                    // Show leak details
-                    showLeakDetails(index);
-                });
-                
-                elements.leakTags.appendChild(leakTag);
-                
-                // Set first leak as active
-                if (index === 0) {
-                    leakTag.classList.add('active');
-                    showLeakDetails(0);
-                }
-            });
-        }
-
-        function showLeakDetails(index) {
-            const leak = mockData.emailLeaks[index];
-            activeLeak = leak;
-            
-            elements.leakDetails.innerHTML = `
-                <div class="mb-2">
-                    <h4>${leak.name}</h4>
-                    <div class="text-muted">${leak.date} • ${leak.count} records</div>
+                    <div class="breach-details">${breach.details}</div>
                 </div>
-                <p>${leak.details}</p>
-                <button class="export-btn" data-index="${index}">
-                    <i class="fas fa-download"></i>
-                    Export This Leak
-                </button>
+            `).join('');
+        }
+
+        function renderGeoInfo() {
+            const container = document.getElementById('geoInfo');
+            container.innerHTML = `
+                <div class="geo-item">
+                    <div class="geo-label">City</div>
+                    <div>${mockData.geo.city}</div>
+                </div>
+                <div class="geo-item">
+                    <div class="geo-label">Region</div>
+                    <div>${mockData.geo.region}</div>
+                </div>
+                <div class="geo-item">
+                    <div class="geo-label">Country</div>
+                    <div>${mockData.geo.country}</div>
+                </div>
+                <div class="geo-item">
+                    <div class="geo-label">ZIP Code</div>
+                    <div>${mockData.geo.zip}</div>
+                </div>
+                <div class="geo-item">
+                    <div class="geo-label">Local Time</div>
+                    <div>${mockData.geo.localTime}</div>
+                </div>
+                <div class="geo-item">
+                    <div class="geo-label">Timezone</div>
+                    <div>${mockData.geo.timezone}</div>
+                </div>
             `;
-            
-            elements.leakDetails.classList.add('active');
-            
-            // Add event listener to export button
-            const exportBtn = elements.leakDetails.querySelector('.export-btn');
-            exportBtn.addEventListener('click', () => {
-                exportLeakAsCSV(index);
-            });
         }
 
-        // ===== MAP FUNCTIONS =====
-        function initializeMap() {
-            // Initialize Leaflet map
-            currentMap = L.map('map-container').setView(
-                [mockData.location.lat, mockData.location.lng], 
-                13
-            );
-            
-            // Add satellite tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(currentMap);
-            
-            // Add marker
-            L.marker([mockData.location.lat, mockData.location.lng])
-                .addTo(currentMap)
-                .bindPopup('<b>Estimated Location</b><br>Based on IP geolocation')
-                .openPopup();
-            
-            // Map control buttons
-            elements.mapStreetBtn.addEventListener('click', () => {
-                elements.mapStreetBtn.classList.add('active');
-                elements.mapSatelliteBtn.classList.remove('active');
-                
-                currentMap.eachLayer(layer => {
-                    if (layer instanceof L.TileLayer) {
-                        currentMap.removeLayer(layer);
-                    }
-                });
-                
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors',
-                    maxZoom: 19
-                }).addTo(currentMap);
-            });
-            
-            elements.mapSatelliteBtn.addEventListener('click', () => {
-                elements.mapSatelliteBtn.classList.add('active');
-                elements.mapStreetBtn.classList.remove('active');
-                
-                currentMap.eachLayer(layer => {
-                    if (layer instanceof L.TileLayer) {
-                        currentMap.removeLayer(layer);
-                    }
-                });
-                
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: 'Tiles © Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-                    maxZoom: 19
-                }).addTo(currentMap);
-            });
+        function renderIpDetails() {
+            const container = document.getElementById('ipDetails');
+            container.innerHTML = `
+                <div class="info-row">
+                    <div class="info-label">IP Address</div>
+                    <div class="info-value">${mockData.ip.address}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">ASN</div>
+                    <div class="info-value">${mockData.ip.asn}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Hostname</div>
+                    <div class="info-value">${mockData.ip.hostname}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Range</div>
+                    <div class="info-value">${mockData.ip.range}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Company</div>
+                    <div class="info-value">${mockData.ip.company}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Anycast</div>
+                    <div class="info-value"><span class="flag ${mockData.ip.anycast ? 'flag-yes' : 'flag-no'}">${mockData.ip.anycast ? 'YES' : 'NO'}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Privacy</div>
+                    <div class="info-value"><span class="flag ${mockData.ip.privacy ? 'flag-yes' : 'flag-no'}">${mockData.ip.privacy ? 'YES' : 'NO'}</span></div>
+                </div>
+            `;
         }
 
-        // ===== SCAN FUNCTIONS =====
+        function renderPhoneDetails() {
+            const container = document.getElementById('phoneDetails');
+            container.innerHTML = `
+                <div class="info-row">
+                    <div class="info-label">Number</div>
+                    <div class="info-value">${mockData.phone.number}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Carrier</div>
+                    <div class="info-value">${mockData.phone.carrier}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Truecaller Name</div>
+                    <div class="info-value">${mockData.phone.truecaller}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Valid Number</div>
+                    <div class="info-value"><span class="flag flag-yes">✅ Verified</span></div>
+                </div>
+            `;
+        }
+
+        function renderLeakTags() {
+            const container = document.getElementById('leakTags');
+            container.innerHTML = mockData.leaks.map(leak => `
+                <div class="leak-tag" data-leak="${leak.name}">
+                    ${leak.name} <small>(${leak.count})</small>
+                </div>
+            `).join('');
+        }
+
+        function renderDomainDetails() {
+            const container = document.getElementById('domainDetails');
+            container.innerHTML = `
+                <div class="info-row">
+                    <div class="info-label">Domain</div>
+                    <div class="info-value">${mockData.domain.name}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Registrar</div>
+                    <div class="info-value">${mockData.domain.registrar}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Created</div>
+                    <div class="info-value">${mockData.domain.created}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">SSL Valid</div>
+                    <div class="info-value"><span class="flag ${mockData.domain.ssl ? 'flag-yes' : 'flag-no'}">${mockData.domain.ssl ? 'ACTIVE' : 'INVALID'}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Expires</div>
+                    <div class="info-value">${mockData.domain.expiry}</div>
+                </div>
+            `;
+        }
+
         function startScan() {
-            // Show progress overlay
-            elements.progressOverlay.style.display = 'flex';
-            
-            // Reset progress
-            scanProgress = 0;
-            elements.progressPercent.textContent = '0%';
-            elements.progressFill.style.width = '0%';
-            
-            // Render scan steps
-            renderScanSteps();
-            
-            // Start scan simulation
-            scanInterval = setInterval(updateScanProgress, 500);
+            document.getElementById('progressContainer').style.display = 'block';
+            progress = 0;
+            currentStep = 0;
+            scanStartTime = new Date();
+            updateTimer();
+            updateProgress();
+            simulateScan();
         }
 
-        function renderScanSteps() {
-            elements.progressSteps.innerHTML = '';
-            
-            mockData.scanSteps.forEach((step, index) => {
-                const stepElement = document.createElement('div');
-                stepElement.className = 'progress-step';
-                stepElement.id = `step-${index}`;
-                
-                stepElement.innerHTML = `
-                    <div class="step-icon ${step.status}">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="step-info">
-                        <div class="step-name">${step.name}</div>
-                        <div class="step-status">Pending</div>
-                    </div>
-                `;
-                
-                elements.progressSteps.appendChild(stepElement);
-            });
-        }
-
-        function updateScanProgress() {
-            if (scanProgress >= 100) {
-                clearInterval(scanInterval);
-                setTimeout(() => {
-                    elements.progressOverlay.style.display = 'none';
-                    showScanCompleteNotification();
-                }, 1000);
-                return;
-            }
-            
-            // Increment progress
-            scanProgress += Math.random() * 5 + 5;
-            if (scanProgress > 100) scanProgress = 100;
-            
-            // Update progress bar
-            elements.progressPercent.textContent = `${Math.round(scanProgress)}%`;
-            elements.progressFill.style.width = `${scanProgress}%`;
-            
-            // Update steps
-            const stepIndex = Math.floor(scanProgress / (100 / mockData.scanSteps.length));
-            
-            for (let i = 0; i < mockData.scanSteps.length; i++) {
-                const stepElement = document.getElementById(`step-${i}`);
-                const icon = stepElement.querySelector('.step-icon');
-                const status = stepElement.querySelector('.step-status');
-                
-                if (i < stepIndex) {
-                    icon.className = 'step-icon completed';
-                    icon.innerHTML = '<i class="fas fa-check"></i>';
-                    status.textContent = 'Completed';
-                } else if (i === stepIndex) {
-                    icon.className = 'step-icon active';
-                    icon.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                    status.textContent = 'In Progress';
+        function simulateScan() {
+            clearInterval(scanInterval);
+            scanInterval = setInterval(() => {
+                progress += Math.random() * 5 + 1;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(scanInterval);
                 }
-            }
-            
-            // Simulate data updates
-            if (scanProgress > 30 && scanProgress < 35) {
-                updateSocialCount(45);
-            }
-            
-            if (scanProgress > 50 && scanProgress < 55) {
-                updateLeakCount(12);
+                updateProgress();
+            }, 200);
+        }
+
+        function updateProgress() {
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
+            const stepIndex = Math.floor((progress / 100) * scanSteps.length);
+            if (stepIndex > currentStep) {
+                currentStep = stepIndex;
+                updateSteps();
             }
         }
 
-        function showScanCompleteNotification() {
-            // Create notification
-            const notification = document.createElement('div');
-            notification.className = 'stat-card';
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.zIndex = '1000';
-            notification.style.animation = 'fadeIn 0.3s ease';
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="stat-icon social" style="width: 40px; height: 40px;">
-                        <i class="fas fa-check"></i>
+        function updateSteps() {
+            const container = document.getElementById('progressSteps');
+            container.innerHTML = scanSteps.map((step, i) => `
+                <div class="step ${i < currentStep ? 'completed' : i === currentStep ? 'active' : ''}">
+                    <div class="step-icon">
+                        <i class="fas fa-${i < currentStep ? 'check' : i === currentStep ? 'spinner fa-spin' : 'clock'}"></i>
                     </div>
-                    <div>
-                        <div style="font-weight: 600;">Scan Complete!</div>
-                        <div style="font-size: 0.9rem; color: var(--muted-gray);">
-                            Found ${document.getElementById('socialCount').textContent} social accounts and 
-                            ${document.getElementById('leakCount').textContent} data breaches
-                        </div>
+                    <div class="step-text">
+                        <div class="step-name">${step.name}</div>
+                        <div class="step-desc">${step.desc}</div>
                     </div>
                 </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 5 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateY(20px)';
-                notification.style.transition = 'all 0.3s ease';
-                
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 5000);
+            `).join('');
         }
 
-        // ===== DATA UPDATE FUNCTIONS =====
-        function updateSocialCount(count) {
-            elements.socialCount.textContent = count;
-            
-            // Animate the update
-            elements.socialCount.style.transform = 'scale(1.2)';
-            elements.socialCount.style.color = 'var(--accent-green)';
-            
-            setTimeout(() => {
-                elements.socialCount.style.transform = 'scale(1)';
-                setTimeout(() => {
-                    elements.socialCount.style.color = '';
-                }, 300);
-            }, 300);
+        function updateTimer() {
+            setInterval(() => {
+                if (!scanStartTime) return;
+                const now = new Date();
+                const diff = Math.floor((now - scanStartTime) / 1000);
+                const mins = Math.floor(diff / 60).toString().padStart(2, '0');
+                const secs = (diff % 60).toString().padStart(2, '0');
+                document.getElementById('scanTimer').textContent = `${mins}:${secs}`;
+            }, 1000);
         }
 
-        function updateLeakCount(count) {
-            elements.leakCount.textContent = count;
-            
-            // Animate the update
-            elements.leakCount.style.transform = 'scale(1.2)';
-            elements.leakCount.style.color = 'var(--accent-orange)';
-            
-            setTimeout(() => {
-                elements.leakCount.style.transform = 'scale(1)';
-                setTimeout(() => {
-                    elements.leakCount.style.color = '';
-                }, 300);
-            }, 300);
+        function exportPdf() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(20);
+            doc.text('Probiv Bot Report', 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 30);
+            doc.save('probiv-report.pdf');
         }
 
-        function updateTimestamp() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', {
-                hour12: true,
-                hour: '2-digit',
-                minute: '2-digit'
+        function exportJson() {
+            const dataStr = JSON.stringify(mockData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'probiv-data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportCsv() {
+            let csv = 'Platform,Username,Status\n';
+            mockData.social.forEach(item => {
+                csv += `${item.platform},${item.user},${item.status}\n`;
             });
-            
-            elements.timestamp.textContent = `Last updated: ${timeString}`;
-            
-            // Update every minute
-            setTimeout(updateTimestamp, 60000);
-        }
-
-        // ===== EXPORT FUNCTIONS =====
-        function exportLeakAsCSV(index) {
-            const leak = mockData.emailLeaks[index];
-            
-            // Create CSV content
-            const csvContent = `data:text/csv;charset=utf-8,Leak Name,Records,Date,Details\n"${leak.name}","${leak.count}","${leak.date}","${leak.details}"`;
-            
-            // Create download link
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', `${leak.name.replace(/\s+/g, '_')}_leak.csv`);
-            document.body.appendChild(link);
-            
-            // Trigger download
-            link.click();
-            document.body.removeChild(link);
-            
-            // Show notification
-            showExportNotification(`Exported ${leak.name} leak data`);
-        }
-
-        function exportAllLeaks() {
-            // Create CSV content for all leaks
-            let csvContent = 'data:text/csv;charset=utf-8,Leak Name,Records,Date,Details\n';
-            
-            mockData.emailLeaks.forEach(leak => {
-                csvContent += `"${leak.name}","${leak.count}","${leak.date}","${leak.details}"\n`;
-            });
-            
-            // Create download link
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', 'all_leaks_export.csv');
-            document.body.appendChild(link);
-            
-            // Trigger download
-            link.click();
-            document.body.removeChild(link);
-            
-            // Show notification
-            showExportNotification('Exported all leak data');
-        }
-
-        function showExportNotification(message) {
-            // Create notification
-            const notification = document.createElement('div');
-            notification.className = 'stat-card';
-            notification.style.position = 'fixed';
-            notification.style.bottom = '20px';
-            notification.style.right = '20px';
-            notification.style.zIndex = '1000';
-            notification.style.animation = 'fadeIn 0.3s ease';
-            notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div class="stat-icon social" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent-green), #2ecc71);">
-                        <i class="fas fa-download"></i>
-                    </div>
-                    <div>
-                        <div style="font-weight: 600;">Export Complete</div>
-                        <div style="font-size: 0.9rem; color: var(--muted-gray);">
-                            ${message}
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remove after 3 seconds
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateY(20px)';
-                notification.style.transition = 'all 0.3s ease';
-                
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-
-        // ===== UTILITY FUNCTIONS =====
-        function setupTooltips() {
-            // Add tooltips to elements with data-tooltip attribute
-            document.querySelectorAll('[data-tooltip]').forEach(element => {
-                const tooltipText = element.getAttribute('data-tooltip');
-                
-                const tooltipContainer = document.createElement('span');
-                tooltipContainer.className = 'tooltip-container';
-                
-                const tooltipIcon = document.createElement('i');
-                tooltipIcon.className = 'fas fa-question-circle tooltip-icon';
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = tooltipText;
-                
-                // Wrap element with tooltip container
-                element.parentNode.insertBefore(tooltipContainer, element);
-                tooltipContainer.appendChild(element);
-                tooltipContainer.appendChild(tooltipIcon);
-                tooltipContainer.appendChild(tooltip);
-            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'probiv-social.csv';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                // Show copy notification
-                const notification = document.createElement('div');
-                notification.style.position = 'fixed';
-                notification.style.bottom = '20px';
-                notification.style.left = '50%';
-                notification.style.transform = 'translateX(-50%)';
-                notification.style.backgroundColor = 'var(--accent-green)';
-                notification.style.color = 'white';
-                notification.style.padding = '0.75rem 1.5rem';
-                notification.style.borderRadius = 'var(--border-radius)';
-                notification.style.zIndex = '1000';
-                notification.style.boxShadow = 'var(--shadow)';
-                notification.textContent = 'Copied to clipboard!';
-                notification.style.animation = 'fadeIn 0.3s ease';
-                
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.style.opacity = '0';
-                    notification.style.transform = 'translateX(-50%) translateY(20px)';
-                    notification.style.transition = 'all 0.3s ease';
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(notification);
-                    }, 300);
-                }, 2000);
+                alert('Copied to clipboard: ' + text);
             });
         }
 
-        // ===== MOCK WEBSOCKET =====
-        function initMockWebSocket() {
-            // Simulate live updates every 30 seconds
-            socketMockInterval = setInterval(() => {
-                // Randomly update social count
-                if (Math.random() > 0.7) {
-                    const currentCount = parseInt(elements.socialCount.textContent);
-                    const newCount = currentCount + Math.floor(Math.random() * 3);
-                    updateSocialCount(newCount);
-                }
-                
-                // Randomly update leak count
-                if (Math.random() > 0.8) {
-                    const currentCount = parseInt(elements.leakCount.textContent);
-                    const newCount = currentCount + Math.floor(Math.random() * 2);
-                    updateLeakCount(newCount);
-                }
-                
-                // Update timestamp
-                updateTimestamp();
-            }, 30000);
-        }
-
-        // ===== EVENT LISTENERS =====
-        function setupEventListeners() {
-            // Scan button
-            elements.scanBtn.addEventListener('click', startScan);
-            
-            // Settings button
-            elements.settingsBtn.addEventListener('click', () => {
-                alert('Settings panel would open here');
-            });
-            
-            // Copy IP button
-            elements.copyIpBtn.addEventListener('click', () => {
-                copyToClipboard(mockData.ipInfo.ip);
-            });
-            
-            // Copy phone button
-            elements.copyPhoneBtn.addEventListener('click', () => {
-                copyToClipboard(mockData.phoneInfo.formatted);
-            });
-            
-            // Call button
-            elements.callBtn.addEventListener('click', () => {
-                window.open(`tel:${mockData.phoneInfo.number}`, '_blank');
-            });
-            
-            // SMS button
-            elements.smsBtn.addEventListener('click', () => {
-                window.open(`sms:${mockData.phoneInfo.number}`, '_blank');
-            });
-            
-            // Export all leaks button
-            elements.exportAllLeaksBtn.addEventListener('click', exportAllLeaks);
-            
-            // Whois button
-            elements.whoisBtn.addEventListener('click', () => {
-                window.open(`https://whois.domaintools.com/${mockData.domainInfo.domain}`, '_blank');
-            });
-            
-            // Search input
-            elements.searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const query = elements.searchInput.value.trim();
-                    if (query) {
-                        alert(`Would search for: ${query}`);
-                        elements.searchInput.value = '';
-                    }
-                }
-            });
-            
-            // Modal close buttons
-            elements.modalClose.addEventListener('click', () => {
-                elements.modalOverlay.style.display = 'none';
-            });
-            
-            elements.closeModalBtn.addEventListener('click', () => {
-                elements.modalOverlay.style.display = 'none';
-            });
-            
-            // Close modal on overlay click
-            elements.modalOverlay.addEventListener('click', (e) => {
-                if (e.target === elements.modalOverlay) {
-                    elements.modalOverlay.style.display = 'none';
-                }
-            });
-            
-            // Escape key to close modal
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && elements.modalOverlay.style.display === 'flex') {
-                    elements.modalOverlay.style.display = 'none';
-                }
-            });
-            
-            // Responsive sidebar toggle (for mobile)
-            window.addEventListener('resize', () => {
-                if (window.innerWidth < 992) {
-                    // Add mobile menu button if not exists
-                    if (!document.getElementById('mobileMenuBtn')) {
-                        const mobileBtn = document.createElement('button');
-                        mobileBtn.id = 'mobileMenuBtn';
-                        mobileBtn.className = 'settings-btn';
-                        mobileBtn.innerHTML = '<i class="fas fa-bars"></i>';
-                        mobileBtn.style.marginRight = '0.5rem';
-                        
-                        mobileBtn.addEventListener('click', () => {
-                            document.getElementById('sidebar').classList.toggle('active');
-                        });
-                        
-                        document.querySelector('.logo-container').appendChild(mobileBtn);
-                    }
-                } else {
-                    // Remove mobile menu button
-                    const mobileBtn = document.getElementById('mobileMenuBtn');
-                    if (mobileBtn) {
-                        mobileBtn.remove();
-                    }
-                    
-                    // Ensure sidebar is visible
-                    document.getElementById('sidebar').classList.remove('active');
-                }
-            });
-            
-            // Trigger initial resize
-            window.dispatchEvent(new Event('resize'));
-        }
-
-        // ===== PERFORMANCE OPTIMIZATION =====
-        // Debounce search input
-        let searchTimeout;
-        elements.searchInput.addEventListener('input', () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                // Perform search after user stops typing
-            }, 300);
-        });
-
-        // Lazy load images
         document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('img[data-src]');
-            
-            const imageObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        imageObserver.unobserve(img);
+            initMap();
+            renderSocialList();
+            renderBreachList();
+            renderGeoInfo();
+            renderIpDetails();
+            renderPhoneDetails();
+            renderLeakTags();
+            renderDomainDetails();
+            updateSteps();
+
+            document.getElementById('scanBtn').addEventListener('click', startScan);
+            document.getElementById('exportPdf').addEventListener('click', exportPdf);
+            document.getElementById('exportJson').addEventListener('click', exportJson);
+            document.getElementById('exportCsv').addEventListener('click', exportCsv);
+            document.getElementById('copyPhone').addEventListener('click', () => copyToClipboard(mockData.phone.number));
+            document.getElementById('callPhone').addEventListener('click', () => window.open('tel:' + mockData.phone.number));
+            document.getElementById('smsPhone').addEventListener('click', () => window.open('sms:' + mockData.phone.number));
+            document.getElementById('whoisBtn').addEventListener('click', () => window.open('https://whois.com/whois/' + mockData.domain.name, '_blank'));
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.breach-item')) {
+                    const item = e.target.closest('.breach-item');
+                    item.classList.toggle('expanded');
+                }
+                if (e.target.closest('.leak-tag')) {
+                    document.querySelectorAll('.leak-tag').forEach(tag => tag.classList.remove('active'));
+                    e.target.closest('.leak-tag').classList.add('active');
+                }
+                if (e.target.closest('.social-item')) {
+                    const platform = e.target.closest('.social-item').dataset.platform;
+                    const social = mockData.social.find(s => s.platform === platform);
+                    if (social.status === 'found') {
+                        alert(`Opening ${platform} profile for ${social.user}`);
                     }
-                });
+                }
             });
-            
-            lazyImages.forEach(img => imageObserver.observe(img));
         });
 
-        // Console greeting
-        console.log('%c🔍 Probiv Bot OSINT Platform', 'color: #ff6b35; font-size: 18px; font-weight: bold;');
-        console.log('%cFrontend OSINT simulation platform initialized', 'color: #4d8af0;');
-        console.log('%cAll data is mock/simulated for demonstration purposes', 'color: #6c757d;');
+        window.addEventListener('beforeunload', () => {
+            clearInterval(scanInterval);
+        });
     </script>
 </body>
 </html>
