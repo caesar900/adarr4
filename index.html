@@ -1,1168 +1,1263 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Probiv Bot</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <style>
-        :root {
-            --primary-dark: #0a0a0f;
-            --secondary-dark: #151520;
-            --accent-orange: #ff6b35;
-            --accent-blue: #4285f4;
-            --text-primary: #e0e0f0;
-            --text-secondary: #a0a0c0;
-            --border-gray: #2a2a40;
-            --card-bg: #1a1a2e;
-            --success-green: #2ecc71;
-            --danger-red: #e74c3c;
-            --warning-yellow: #f39c12;
-            --shadow-glow: 0 0 15px rgba(255, 107, 53, 0.3);
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-        body {
-            background: var(--primary-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        .topbar {
-            background: var(--secondary-dark);
-            padding: 15px 30px;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            border-bottom: 1px solid var(--border-gray);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }
-        .logo i {
-            font-size: 2.2rem;
-        }
-        .search-box {
-            flex: 1;
-            max-width: 500px;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 12px 20px;
-            background: var(--card-bg);
-            border: 1px solid var(--border-gray);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 1rem;
-        }
-        .search-box input::placeholder {
-            color: var(--text-secondary);
-        }
-        .scan-btn {
-            background: linear-gradient(135deg, var(--accent-orange), #ff8b35);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .scan-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-glow);
-        }
-        .scan-btn:active {
-            transform: translateY(0);
-        }
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .vpn-status {
-            color: var(--success-green);
-            font-size: 0.9rem;
-            padding: 6px 12px;
-            background: rgba(46, 204, 113, 0.1);
-            border-radius: 20px;
-            border: 1px solid var(--success-green);
-        }
-        .settings-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-        }
-        .settings-btn:hover {
-            color: var(--accent-orange);
-            background: rgba(255, 107, 53, 0.1);
-        }
-        .container {
-            display: flex;
-            min-height: calc(100vh - 70px);
-        }
-        .sidebar {
-            width: 260px;
-            background: var(--secondary-dark);
-            border-right: 1px solid var(--border-gray);
-            padding: 25px 0;
-            flex-shrink: 0;
-        }
-        .menu-section {
-            margin-bottom: 30px;
-        }
-        .menu-title {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0 25px 10px;
-        }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 14px 25px;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-        }
-        .menu-item:hover {
-            background: rgba(255, 107, 53, 0.05);
-            color: var(--accent-orange);
-        }
-        .menu-item.active {
-            background: rgba(255, 107, 53, 0.1);
-            color: var(--accent-orange);
-            border-left-color: var(--accent-orange);
-        }
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid var(--border-gray);
-            transition: all 0.3s;
-        }
-        .stat-card:hover {
-            border-color: var(--accent-orange);
-            box-shadow: var(--shadow-glow);
-        }
-        .stat-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background: rgba(255, 107, 53, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--accent-orange);
-        }
-        .stat-title {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-        }
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--accent-orange);
-        }
-        .stat-sub {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-        .overview-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .grid-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-gray);
-            padding: 20px;
-        }
-        .grid-title {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-gray);
-            color: var(--accent-orange);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .social-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .social-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .social-item:hover {
-            background: rgba(255, 107, 53, 0.1);
-            transform: translateX(5px);
-        }
-        .social-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-        }
-        .social-name {
-            flex: 1;
-            font-weight: 600;
-        }
-        .social-user {
-            color: var(--text-secondary);
-            font-family: monospace;
-        }
-        .social-status {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .status-found {
-            background: rgba(46, 204, 113, 0.2);
-            color: var(--success-green);
-        }
-        .status-missing {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger-red);
-        }
-        .breach-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .breach-item {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .breach-item:hover {
-            background: rgba(255, 107, 53, 0.1);
-        }
-        .breach-source {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .breach-name {
-            font-weight: 600;
-            color: var(--accent-blue);
-        }
-        .breach-type {
-            padding: 4px 10px;
-            background: rgba(66, 133, 244, 0.2);
-            color: var(--accent-blue);
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-        .breach-details {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s;
-        }
-        .breach-item.expanded .breach-details {
-            max-height: 200px;
-            margin-top: 10px;
-        }
-        #map {
-            height: 300px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border: 1px solid var(--border-gray);
-        }
-        .geo-info {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .geo-item {
-            background: rgba(255, 255, 255, 0.03);
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-        }
-        .geo-label {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-bottom: 4px;
-        }
-        .details-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        .info-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--border-gray);
-            padding: 20px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .info-label {
-            color: var(--text-secondary);
-        }
-        .info-value {
-            font-weight: 600;
-            font-family: monospace;
-        }
-        .flag {
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .flag-yes {
-            background: rgba(46, 204, 113, 0.2);
-            color: var(--success-green);
-        }
-        .flag-no {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger-red);
-        }
-        .phone-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .action-btn {
-            padding: 8px 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border-gray);
-            background: var(--secondary-dark);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .action-btn:hover {
-            border-color: var(--accent-orange);
-            color: var(--accent-orange);
-        }
-        .leak-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        .leak-tag {
-            background: rgba(255, 107, 53, 0.1);
-            color: var(--accent-orange);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-        .leak-tag:hover {
-            background: rgba(255, 107, 53, 0.2);
-            border-color: var(--accent-orange);
-        }
-        .leak-tag.active {
-            background: var(--accent-orange);
-            color: white;
-        }
-        .progress-container {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
-            border: 1px solid var(--border-gray);
-            display: none;
-        }
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-        .progress-bar {
-            height: 10px;
-            background: var(--secondary-dark);
-            border-radius: 5px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-orange), #ff8b35);
-            width: 0%;
-            transition: width 0.5s;
-        }
-        .progress-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .step {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .step-icon {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: var(--secondary-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-        }
-        .step.active .step-icon {
-            background: var(--accent-orange);
-            color: white;
-        }
-        .step.completed .step-icon {
-            background: var(--success-green);
-            color: white;
-        }
-        .step-text {
-            flex: 1;
-        }
-        .step-name {
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-        .step-desc {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-        .export-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .export-btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            border: 1px solid var(--border-gray);
-            background: var(--secondary-dark);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .export-btn:hover {
-            border-color: var(--accent-orange);
-            color: var(--accent-orange);
-        }
-        .tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background: var(--secondary-dark);
-            color: var(--text-primary);
-            text-align: center;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-gray);
-            position: absolute;
-            z-index: 1000;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.9rem;
-        }
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
-        }
-        .skeleton {
-            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        @media (max-width: 1200px) {
-            .overview-grid, .stats-row, .details-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-            .topbar {
-                flex-direction: column;
-                gap: 15px;
-                padding: 15px;
-            }
-            .search-box {
-                max-width: 100%;
-            }
-            .overview-grid, .stats-row, .details-grid {
-                grid-template-columns: 1fr;
-            }
-            .geo-info {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROBIV BOT — OSINT Intelligence Platform v3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg:        #020912;
+  --bg2:       #040f1e;
+  --bg3:       #071428;
+  --panel:     #061322;
+  --panel2:    #081a2e;
+  --border:    rgba(0,200,255,0.15);
+  --border2:   rgba(0,200,255,0.35);
+  --blue:      #00c8ff;
+  --blue2:     #0088cc;
+  --orange:    #ff6b00;
+  --orange2:   #ff9500;
+  --green:     #00ff88;
+  --red:       #ff2244;
+  --yellow:    #ffcc00;
+  --text:      #c8e0f0;
+  --text2:     #7099bb;
+  --text3:     #3a5870;
+  --mono:      'Share Tech Mono', monospace;
+  --head:      'Orbitron', sans-serif;
+  --body:      'Rajdhani', sans-serif;
+  --glow-b:    0 0 10px rgba(0,200,255,0.4), 0 0 30px rgba(0,200,255,0.15);
+  --glow-o:    0 0 10px rgba(255,107,0,0.5), 0 0 30px rgba(255,107,0,0.2);
+  --glow-g:    0 0 10px rgba(0,255,136,0.4), 0 0 20px rgba(0,255,136,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--body)}
+
+/* ── BACKGROUND EFFECTS ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 80%, rgba(0,80,180,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 80% 10%, rgba(0,150,255,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,50,120,0.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#stars span{position:absolute;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s)}
+@keyframes twinkle{0%,100%{opacity:0.1;transform:scale(1)}50%{opacity:0.9;transform:scale(1.4)}}
+
+/* grid overlay */
+#grid{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,150,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,150,255,0.03) 1px, transparent 1px);
+  background-size:40px 40px;
+}
+/* scan line */
+#scan{
+  position:fixed;top:-2px;left:0;right:0;height:2px;z-index:1000;pointer-events:none;
+  background:linear-gradient(90deg, transparent, var(--blue), var(--orange), var(--blue), transparent);
+  box-shadow:var(--glow-b);
+  animation:scanline 6s linear infinite;
+}
+@keyframes scanline{0%{top:-2px}100%{top:100vh}}
+
+/* city silhouette at bottom */
+#city{
+  position:fixed;bottom:0;left:0;right:0;height:120px;z-index:1;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 120' preserveAspectRatio='none'%3E%3Cpath fill='%23020912' d='M0,120 L0,80 L20,80 L20,40 L40,40 L40,60 L60,60 L60,20 L80,20 L80,50 L100,50 L100,30 L120,30 L120,70 L140,70 L140,45 L160,45 L160,55 L180,55 L180,25 L200,25 L200,60 L220,60 L220,35 L240,35 L240,65 L260,65 L260,40 L280,40 L280,75 L300,75 L300,50 L320,50 L320,30 L340,30 L340,55 L360,55 L360,70 L380,70 L380,40 L400,40 L400,60 L420,60 L420,20 L440,20 L440,50 L460,50 L460,35 L480,35 L480,65 L500,65 L500,45 L520,45 L520,80 L540,80 L540,55 L560,55 L560,30 L580,30 L580,70 L600,70 L600,40 L620,40 L620,55 L640,55 L640,25 L660,25 L660,60 L680,60 L680,45 L700,45 L700,75 L720,75 L720,35 L740,35 L740,55 L760,55 L760,65 L780,65 L780,30 L800,30 L800,50 L820,50 L820,40 L840,40 L840,70 L860,70 L860,55 L880,55 L880,25 L900,25 L900,60 L920,60 L920,45 L940,45 L940,80 L960,80 L960,35 L980,35 L980,55 L1000,55 L1000,30 L1020,30 L1020,65 L1040,65 L1040,45 L1060,45 L1060,70 L1080,70 L1080,40 L1100,40 L1100,60 L1120,60 L1120,20 L1140,20 L1140,50 L1160,50 L1160,35 L1180,35 L1180,75 L1200,75 L1200,50 L1220,50 L1220,30 L1240,30 L1240,55 L1260,55 L1260,65 L1280,65 L1280,40 L1300,40 L1300,25 L1320,25 L1320,60 L1340,60 L1340,45 L1360,45 L1360,80 L1380,80 L1380,55 L1400,55 L1400,35 L1420,35 L1420,55 L1440,55 L1440,70 L1460,70 L1460,40 L1480,40 L1480,60 L1500,60 L1500,30 L1520,30 L1520,50 L1540,50 L1540,45 L1560,45 L1560,75 L1580,75 L1580,35 L1600,35 L1600,55 L1620,55 L1620,65 L1640,65 L1640,40 L1660,40 L1660,25 L1680,25 L1680,60 L1700,60 L1700,45 L1720,45 L1720,80 L1740,80 L1740,55 L1760,55 L1760,30 L1780,30 L1780,55 L1800,55 L1800,70 L1820,70 L1820,40 L1840,40 L1840,60 L1860,60 L1860,50 L1880,50 L1880,35 L1900,35 L1900,65 L1920,65 L1920,120 Z'/%3E%3C/svg%3E") bottom/cover no-repeat;
+  opacity:0.95;
+  mask-image:linear-gradient(to top, black 60%, transparent 100%);
+}
+/* city glow reflection */
+#cityGlow{
+  position:fixed;bottom:0;left:0;right:0;height:80px;z-index:0;pointer-events:none;
+  background:linear-gradient(to top, rgba(0,80,200,0.12), transparent);
+}
+
+/* ── LAYOUT ── */
+#app{position:relative;z-index:10;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ── TOPBAR ── */
+.topbar{
+  display:flex;align-items:center;height:52px;
+  background:linear-gradient(90deg, rgba(2,10,28,0.98), rgba(4,16,36,0.95));
+  border-bottom:1px solid var(--border2);
+  padding:0 16px;gap:0;position:relative;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,0.5);
+}
+.topbar::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg, transparent, var(--blue), var(--orange), var(--blue), transparent);
+}
+
+.logo{
+  display:flex;align-items:center;gap:10px;margin-right:24px;
+  font-family:var(--head);font-size:14px;font-weight:900;letter-spacing:3px;
+  color:var(--blue);text-shadow:var(--glow-b);white-space:nowrap;
+}
+.logo-icon{
+  width:32px;height:32px;border:2px solid var(--blue);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:900;
+  background:rgba(0,200,255,0.08);
+  box-shadow:var(--glow-b);
+  animation:logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse{0%,100%{box-shadow:var(--glow-b)}50%{box-shadow:0 0 20px rgba(0,200,255,0.7),0 0 40px rgba(0,200,255,0.3)}}
+
+.nav-tabs{display:flex;gap:2px;flex:1}
+.nav-tab{
+  padding:0 18px;height:52px;background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--text2);font-family:var(--body);font-size:12px;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;white-space:nowrap;
+}
+.nav-tab:hover{color:var(--blue);background:rgba(0,200,255,0.04)}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);background:rgba(0,200,255,0.06);text-shadow:var(--glow-b)}
+
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:statusBlink 2s ease-in-out infinite}
+@keyframes statusBlink{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-text{font-family:var(--mono);font-size:10px;color:var(--green)}
+
+.tb-btn{
+  padding:6px 12px;border:1px solid var(--border);background:rgba(0,200,255,0.05);
+  color:var(--text2);font-family:var(--mono);font-size:10px;letter-spacing:1px;
+  cursor:pointer;border-radius:3px;transition:all 0.2s;text-transform:uppercase;
+}
+.tb-btn:hover{border-color:var(--blue);color:var(--blue);background:rgba(0,200,255,0.1);box-shadow:var(--glow-b)}
+.tb-btn.orange{border-color:rgba(255,107,0,0.3);color:var(--orange)}
+.tb-btn.orange:hover{border-color:var(--orange);background:rgba(255,107,0,0.1);box-shadow:var(--glow-o)}
+.tb-btn.active-proxy{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.05)}
+
+.clock{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:90px;text-align:right}
+
+/* ── MAIN AREA ── */
+.main{display:flex;flex:1;overflow:hidden;gap:0}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:200px;flex-shrink:0;
+  background:linear-gradient(180deg, rgba(3,12,28,0.98), rgba(4,15,32,0.95));
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;gap:0;overflow-y:auto;
+  padding-bottom:80px;
+}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.sb-section{padding:12px 0 4px}
+.sb-label{
+  padding:4px 14px 8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:3px;
+  color:var(--text3);text-transform:uppercase;
+  border-bottom:1px solid var(--border);margin-bottom:4px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;cursor:pointer;transition:all 0.15s;
+  border-left:2px solid transparent;position:relative;
+  font-size:12px;font-weight:600;letter-spacing:0.5px;color:var(--text2);
+}
+.sb-item:hover{color:var(--blue);background:rgba(0,200,255,0.05);border-left-color:rgba(0,200,255,0.3)}
+.sb-item.active{color:var(--blue);background:rgba(0,200,255,0.08);border-left-color:var(--blue)}
+.sb-item.active::before{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:2px;
+  background:var(--blue);box-shadow:0 0 8px var(--blue);
+}
+.sb-icon{width:18px;text-align:center;font-size:13px;flex-shrink:0}
+.sb-badge{
+  margin-left:auto;padding:1px 5px;border-radius:8px;
+  font-family:var(--mono);font-size:8px;letter-spacing:1px;
+  background:rgba(0,200,255,0.15);color:var(--blue);
+}
+.sb-badge.new{background:rgba(255,107,0,0.15);color:var(--orange)}
+
+.sb-divider{height:1px;background:var(--border);margin:6px 0}
+
+/* ── CONTENT ── */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* ── SEARCH BAR ── */
+.search-zone{
+  padding:12px 16px 10px;
+  background:rgba(2,10,24,0.8);
+  border-bottom:1px solid var(--border);
+}
+.search-row{display:flex;gap:8px;align-items:center}
+.mode-pill{
+  padding:0 12px;height:40px;display:flex;align-items:center;gap:6px;
+  background:rgba(0,200,255,0.06);border:1px solid var(--border2);border-radius:4px;
+  font-family:var(--mono);font-size:10px;color:var(--blue);white-space:nowrap;
+  cursor:pointer;transition:all 0.2s;
+}
+.mode-pill select{background:transparent;border:none;color:var(--blue);font-family:var(--mono);font-size:10px;cursor:pointer;outline:none;letter-spacing:1px}
+.mode-pill select option{background:#061322;color:var(--text)}
+
+.search-wrap{
+  flex:1;position:relative;display:flex;align-items:center;
+}
+.search-wrap::before{
+  content:'⌖';position:absolute;left:14px;
+  font-size:18px;color:var(--blue);opacity:0.7;pointer-events:none;
+  text-shadow:var(--glow-b);
+}
+#searchInput{
+  width:100%;height:40px;background:rgba(0,30,60,0.5);
+  border:1px solid var(--border2);border-radius:4px;
+  padding:0 14px 0 40px;
+  color:var(--text);font-family:var(--mono);font-size:13px;letter-spacing:1px;
+  outline:none;transition:all 0.2s;
+}
+#searchInput::placeholder{color:var(--text3);font-size:11px;letter-spacing:2px}
+#searchInput:focus{border-color:var(--blue);background:rgba(0,40,80,0.4);box-shadow:0 0 0 1px rgba(0,200,255,0.2),var(--glow-b)}
+
+#scanBtn{
+  height:40px;padding:0 24px;
+  background:linear-gradient(135deg, #0060ff, #003399);
+  border:1px solid rgba(0,150,255,0.5);border-radius:4px;
+  color:#fff;font-family:var(--head);font-size:11px;font-weight:700;letter-spacing:3px;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;position:relative;overflow:hidden;
+}
+#scanBtn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15));
+  transform:translateX(-100%);transition:transform 0.3s;
+}
+#scanBtn:hover{background:linear-gradient(135deg,#0080ff,#0055cc);box-shadow:0 0 20px rgba(0,150,255,0.5);border-color:rgba(0,200,255,0.7)}
+#scanBtn:hover::before{transform:translateX(0)}
+#scanBtn:active{transform:scale(0.98)}
+#scanBtn.scanning{
+  background:linear-gradient(135deg,#003366,#001a44);
+  animation:scanningPulse 1s ease-in-out infinite;
+}
+@keyframes scanningPulse{0%,100%{box-shadow:0 0 10px rgba(0,150,255,0.3)}50%{box-shadow:0 0 30px rgba(0,150,255,0.7)}}
+
+/* progress bar */
+#progressBar{height:2px;background:var(--border);position:relative;overflow:hidden}
+#progressFill{height:100%;width:0%;background:linear-gradient(90deg, var(--blue), var(--orange));transition:width 0.3s;position:relative}
+#progressFill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:40px;background:linear-gradient(90deg, transparent, rgba(255,255,255,0.5))}
+
+/* ── PANELS GRID ── */
+.panels-grid{
+  flex:1;display:grid;overflow:hidden;
+  grid-template-columns:1fr 1fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:10px;padding:10px;
+  padding-bottom:90px;
+}
+
+/* ── STAT CARDS ROW ── */
+.stat-cards{
+  grid-column:1/-1;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+}
+.stat-card{
+  background:var(--panel);
+  border:1px solid var(--border);border-radius:6px;
+  padding:10px 14px;position:relative;overflow:hidden;
+  transition:all 0.2s;cursor:default;
+}
+.stat-card:hover{border-color:var(--border2);background:var(--panel2)}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg, var(--accent,var(--blue)), transparent);
+}
+.stat-card.orange{--accent:var(--orange)}
+.stat-card.green{--accent:var(--green)}
+.stat-card.red{--accent:var(--red)}
+.stat-card.yellow{--accent:var(--yellow)}
+
+.sc-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:6px}
+.sc-icon{position:absolute;right:10px;top:10px;font-size:20px;opacity:0.15}
+.sc-val{font-family:var(--head);font-size:18px;font-weight:700;color:var(--text);line-height:1}
+.sc-sub{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-val.found{color:var(--green);text-shadow:var(--glow-g)}
+.sc-val.notfound{color:var(--red)}
+.sc-val.loading{color:var(--yellow)}
+
+/* ── PANEL CARD ── */
+.panel-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  display:flex;flex-direction:column;overflow:hidden;transition:border-color 0.2s;
+  min-height:0;
+}
+.panel-card:hover{border-color:var(--border2)}
+.panel-card.span2{grid-column:span 2}
+
+.panel-head{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid var(--border);background:rgba(0,0,0,0.2);
+  flex-shrink:0;
+}
+.panel-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.panel-dot.blue{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.panel-dot.orange{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.panel-dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.panel-dot.red{background:var(--red);box-shadow:0 0 6px var(--red)}
+.panel-dot.yellow{background:var(--yellow);box-shadow:0 0 6px var(--yellow)}
+.panel-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--text2);text-transform:uppercase;flex:1}
+.panel-badge{font-family:var(--mono);font-size:8px;padding:2px 6px;border-radius:3px;background:rgba(0,200,255,0.1);color:var(--blue);letter-spacing:1px}
+
+.panel-body{flex:1;overflow-y:auto;padding:10px;min-height:0}
+.panel-body::-webkit-scrollbar{width:3px}
+.panel-body::-webkit-scrollbar-track{background:transparent}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ── DATA ROWS ── */
+.d-row{
+  display:flex;justify-content:space-between;align-items:baseline;
+  padding:5px 0;border-bottom:1px solid rgba(0,150,255,0.06);
+  gap:8px;
+}
+.d-row:last-child{border-bottom:none}
+.d-key{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.d-val{font-family:var(--mono);font-size:11px;color:var(--text);text-align:right;word-break:break-all}
+.d-val.yes{color:var(--green)}
+.d-val.no{color:var(--red)}
+.d-val.warn{color:var(--yellow)}
+.d-val.hi{color:var(--blue)}
+.d-val.orange{color:var(--orange)}
+
+/* found badge */
+.found-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:3px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:2px;
+}
+.found-badge.yes{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green)}
+.found-badge.no{background:rgba(255,34,68,0.1);border:1px solid rgba(255,34,68,0.3);color:var(--red)}
+
+/* social platform chips */
+.platform-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{
+  padding:3px 8px;border-radius:3px;font-family:var(--mono);font-size:9px;letter-spacing:1px;
+  cursor:pointer;transition:all 0.15s;
+}
+.chip.found{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);color:var(--green)}
+.chip.found:hover{background:rgba(0,255,136,0.2);box-shadow:var(--glow-g)}
+.chip.notfound{background:rgba(255,34,68,0.06);border:1px solid rgba(255,34,68,0.15);color:var(--text3)}
+
+/* profile box */
+.profile-box{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:8px;background:rgba(0,30,60,0.3);border-radius:6px;
+  border:1px solid var(--border);margin-bottom:8px;
+}
+.profile-ava{
+  width:50px;height:50px;border-radius:50%;border:2px solid var(--blue);
+  object-fit:cover;flex-shrink:0;box-shadow:var(--glow-b);
+}
+.profile-ava-ph{
+  width:50px;height:50px;border-radius:50%;border:2px solid var(--border2);
+  background:rgba(0,100,200,0.1);display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.profile-info{flex:1;min-width:0}
+.profile-name{font-family:var(--body);font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.profile-user{font-family:var(--mono);font-size:10px;color:var(--blue)}
+.profile-bio{font-size:10px;color:var(--text2);margin-top:4px;line-height:1.4;word-break:break-word}
+
+/* map */
+#mapPanel{
+  flex:1;min-height:180px;border-radius:4px;overflow:hidden;position:relative;
+}
+#map{width:100%;height:100%;min-height:180px}
+.map-placeholder{
+  width:100%;height:180px;background:rgba(0,20,50,0.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;
+  border:1px dashed var(--border);border-radius:4px;
+}
+.map-placeholder .big{font-size:30px;opacity:0.3}
+
+/* empty state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:10px;padding:20px;
+}
+.empty-state .icon{font-size:32px;opacity:0.2}
+.empty-state .msg{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;text-align:center}
+
+/* loader */
+.loader{
+  display:flex;align-items:center;justify-content:center;height:100%;
+  flex-direction:column;gap:12px;
+}
+.loader-bars{display:flex;gap:4px;align-items:flex-end;height:24px}
+.loader-bar{
+  width:4px;border-radius:2px;background:var(--blue);
+  animation:barAnim 0.8s ease-in-out infinite;
+}
+.loader-bar:nth-child(2){animation-delay:0.1s}
+.loader-bar:nth-child(3){animation-delay:0.2s}
+.loader-bar:nth-child(4){animation-delay:0.3s}
+.loader-bar:nth-child(5){animation-delay:0.4s}
+@keyframes barAnim{0%,100%{height:4px;opacity:0.3}50%{height:24px;opacity:1}}
+.loader-text{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:3px;animation:fadeInOut 2s ease-in-out infinite}
+@keyframes fadeInOut{0%,100%{opacity:0.4}50%{opacity:1}}
+
+/* status bar */
+.statusbar{
+  position:fixed;bottom:0;left:200px;right:0;height:26px;z-index:50;
+  display:flex;align-items:center;gap:12px;padding:0 14px;
+  background:rgba(2,8,20,0.98);border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;
+}
+.statusbar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg, var(--blue), transparent)}
+.sb-segment{display:flex;align-items:center;gap:5px}
+.sb-segment::after{content:'';width:1px;height:14px;background:var(--border);margin-left:12px}
+.sb-segment:last-child::after{display:none}
+
+/* ── TOAST ── */
+#toastContainer{position:fixed;top:60px;right:16px;z-index:1000;display:flex;flex-direction:column;gap:6px}
+.toast{
+  padding:8px 14px;background:rgba(4,16,36,0.98);border:1px solid var(--border2);border-radius:4px;
+  font-family:var(--mono);font-size:10px;color:var(--text);min-width:220px;max-width:320px;
+  display:flex;align-items:center;gap:8px;
+  animation:toastIn 0.2s ease-out;box-shadow:0 4px 20px rgba(0,0,0,0.5);
+}
+.toast.success{border-color:rgba(0,255,136,0.4);color:var(--green)}
+.toast.error{border-color:rgba(255,34,68,0.4);color:var(--red)}
+.toast.info{border-color:rgba(0,200,255,0.3);color:var(--blue)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── PROXY MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--panel);border:1px solid var(--border2);border-radius:8px;
+  padding:24px;width:380px;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,0.8),0 0 40px rgba(0,150,255,0.1);
+}
+.modal-title{font-family:var(--head);font-size:13px;letter-spacing:3px;color:var(--blue);margin-bottom:18px;text-shadow:var(--glow-b)}
+.modal-close{position:absolute;top:14px;right:14px;cursor:pointer;color:var(--text3);font-size:16px;transition:color 0.2s}
+.modal-close:hover{color:var(--red)}
+.radio-group{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.radio-opt{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;
+  border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all 0.15s;
+}
+.radio-opt:hover{border-color:var(--border2);background:rgba(0,200,255,0.04)}
+.radio-opt input{accent-color:var(--blue)}
+.radio-opt label{font-family:var(--mono);font-size:11px;color:var(--text);cursor:pointer}
+.modal-input{
+  width:100%;padding:8px 12px;background:rgba(0,20,50,0.5);border:1px solid var(--border);
+  border-radius:4px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;
+  transition:border-color 0.2s;
+}
+.modal-input:focus{border-color:var(--blue)}
+.modal-btn{
+  width:100%;padding:10px;background:linear-gradient(135deg,#0060ff,#003399);
+  border:none;border-radius:4px;color:#fff;font-family:var(--head);font-size:10px;
+  letter-spacing:3px;cursor:pointer;transition:all 0.2s;margin-top:14px;
+}
+.modal-btn:hover{background:linear-gradient(135deg,#0080ff,#0055cc);box-shadow:0 0 20px rgba(0,100,255,0.4)}
+
+/* link style */
+.ext-link{color:var(--blue);text-decoration:none;font-family:var(--mono);font-size:9px;letter-spacing:1px}
+.ext-link:hover{text-decoration:underline;text-shadow:var(--glow-b)}
+
+/* tag list */
+.tag-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tag{padding:2px 6px;border-radius:3px;font-family:var(--mono);font-size:8px;letter-spacing:1px;background:rgba(0,200,255,0.1);border:1px solid rgba(0,200,255,0.2);color:var(--blue)}
+
+/* tor indicator */
+.tor-active{color:var(--green)!important;border-color:rgba(0,255,136,0.4)!important;background:rgba(0,255,136,0.05)!important}
+
+/* LEAFLET dark theme override */
+.leaflet-tile-pane{filter:invert(1) hue-rotate(200deg) brightness(0.7) saturate(1.5)}
+.leaflet-container{background:#020912}
+.leaflet-control-attribution{display:none}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.panel-body > *{animation:fadeIn 0.3s ease-out}
+
+/* responsive height constraints */
+.panels-grid{
+  grid-template-rows:auto 1fr 1fr;
+}
+</style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="logo">
-            <i class="fas fa-search"></i>
-            <span>Probiv Bot</span>
+<div id="stars"></div>
+<div id="grid"></div>
+<div id="scan"></div>
+<div id="cityGlow"></div>
+<div id="city"></div>
+<div id="toastContainer"></div>
+
+<!-- PROXY MODAL -->
+<div class="modal-overlay" id="proxyModal">
+  <div class="modal">
+    <span class="modal-close" onclick="closeProxy()">✕</span>
+    <div class="modal-title">⚡ PROXY CONFIGURATION</div>
+    <div class="radio-group">
+      <div class="radio-opt"><input type="radio" name="proxyType" id="pNone" value="none" checked><label for="pNone">🔓 No Proxy (Direct)</label></div>
+      <div class="radio-opt"><input type="radio" name="proxyType" id="pTor" value="tor"><label for="pTor">🧅 TOR SOCKS5 — 127.0.0.1:9050</label></div>
+      <div class="radio-opt"><input type="radio" name="proxyType" id="pCustom" value="custom"><label for="pCustom">⚙ Custom Proxy URL</label></div>
+    </div>
+    <input class="modal-input" id="customProxy" placeholder="socks5://127.0.0.1:1080 or http://user:pass@host:port">
+    <button class="modal-btn" onclick="saveProxy()">APPLY PROXY</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">P</div>
+      PROBIV<span style="color:var(--orange);margin-left:2px">BOT</span>
+      <span style="color:var(--text3);font-size:9px;font-weight:400;letter-spacing:1px">v3.0</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab(this,'dashboard')">⊞ DASHBOARD</button>
+      <button class="nav-tab" onclick="switchTab(this,'profiles')">◉ PROFILES</button>
+      <button class="nav-tab" onclick="switchTab(this,'geo')">◈ GEO-INTEL</button>
+      <button class="nav-tab" onclick="switchTab(this,'reports')">⊙ REPORTS</button>
+    </div>
+    <div class="topbar-right">
+      <div class="status-dot" id="connDot"></div>
+      <span class="status-text" id="connText">ONLINE</span>
+      <button class="tb-btn" onclick="checkTorStatus()" id="torBtn">🧅 TOR</button>
+      <button class="tb-btn orange" onclick="openProxy()" id="proxyBtn">⚡ PROXY: OFF</button>
+      <span class="clock" id="clock">--:--:--</span>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Search</div>
+        <div class="sb-item active" onclick="setMode('phone',this)">
+          <span class="sb-icon">📞</span>Phone Lookup
         </div>
-        <div class="search-box">
-            <input type="text" placeholder="john.doe@example.com" id="searchInput">
+        <div class="sb-item" onclick="setMode('username',this)">
+          <span class="sb-icon">👤</span>Username
+          <span class="sb-badge">10+</span>
         </div>
-        <div class="topbar-right">
-            <div class="vpn-status">
-                <i class="fas fa-shield-alt"></i> VPN Active
-            </div>
-            <button class="settings-btn" id="settingsBtn">
-                <i class="fas fa-cog"></i>
-            </button>
-            <button class="scan-btn" id="scanBtn">
-                <i class="fas fa-play"></i> START SCAN
-            </button>
+        <div class="sb-item" onclick="setMode('email',this)">
+          <span class="sb-icon">✉</span>Email OSINT
         </div>
+        <div class="sb-item" onclick="setMode('ip',this)">
+          <span class="sb-icon">🌐</span>IP Address
+        </div>
+        <div class="sb-item" onclick="setMode('domain',this)">
+          <span class="sb-icon">🔗</span>Domain WHOIS
+        </div>
+        <div class="sb-item" onclick="setMode('person',this)">
+          <span class="sb-icon">🔍</span>Person Search
+          <span class="sb-badge new">NEW</span>
+        </div>
+        <div class="sb-item" onclick="setMode('breach',this)">
+          <span class="sb-icon">💀</span>Breach Check
+          <span class="sb-badge new">NEW</span>
+        </div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <div class="sb-label">Social APIs</div>
+        <div class="sb-item" onclick="setMode('twitter',this)">
+          <span class="sb-icon">𝕏</span>Twitter / X
+          <span class="sb-badge">API</span>
+        </div>
+        <div class="sb-item" onclick="setMode('vk',this)">
+          <span class="sb-icon">💙</span>ВКонтакте
+          <span class="sb-badge">API</span>
+        </div>
+        <div class="sb-item" onclick="setMode('github',this)">
+          <span class="sb-icon">🐱</span>GitHub
+          <span class="sb-badge">API</span>
+        </div>
+        <div class="sb-item" onclick="setMode('telegram',this)">
+          <span class="sb-icon">✈</span>Telegram
+        </div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <div class="sb-label">Parsers</div>
+        <div class="sb-item" onclick="setMode('social',this)">
+          <span class="sb-icon">📱</span>TikTok/IG/FB
+          <span class="sb-badge">10 strat</span>
+        </div>
+        <div class="sb-item" onclick="setMode('tiktok',this)">
+          <span class="sb-icon">🎵</span>TikTok Deep
+        </div>
+        <div class="sb-item" onclick="setMode('instagram',this)">
+          <span class="sb-icon">📸</span>Instagram Deep
+        </div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <div class="sb-label">Tools</div>
+        <div class="sb-item" onclick="runSherlock()">
+          <span class="sb-icon">🔎</span>Sherlock
+          <span class="sb-badge">EXT</span>
+        </div>
+        <div class="sb-item" onclick="exportReport()">
+          <span class="sb-icon">📄</span>Export JSON
+        </div>
+        <div class="sb-item" onclick="clearAll()">
+          <span class="sb-icon">🗑</span>Clear All
+        </div>
+      </div>
     </div>
 
-    <div class="container">
-        <div class="sidebar">
-            <div class="menu-section">
-                <div class="menu-title">Main</div>
-                <a href="#" class="menu-item active">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </div>
-            <div class="menu-section">
-                <div class="menu-title">Investigations</div>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-user-secret"></i> Target Profile: John Doe
-                </a>
-            </div>
-            <div class="menu-section">
-                <div class="menu-title">Tools</div>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-user"></i> Username Search
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-phone"></i> Phone Lookup
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-envelope"></i> Email Search
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-network-wired"></i> IP Address Scan
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-globe"></i> Domain Info
-                </a>
-            </div>
-            <div class="menu-section">
-                <div class="menu-title">Modules</div>
-                <a href="#" class="menu-item">
-                    <i class="fab fa-twitter"></i> Social Networks
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-database"></i> Leaked Databases
-                </a>
-                <a href="#" class="menu-item">
-                    <i class="fas fa-map-marker-alt"></i> Geo Location
-                </a>
-            </div>
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- SEARCH BAR -->
+      <div class="search-zone">
+        <div class="search-row">
+          <div class="mode-pill">
+            <span style="font-size:8px;letter-spacing:2px;color:var(--text3)">MODE</span>
+            <select id="modeSelect" onchange="setModeFromSelect()">
+              <option value="phone">PHONE</option>
+              <option value="username">USERNAME</option>
+              <option value="email">EMAIL</option>
+              <option value="ip">IP/DOMAIN</option>
+              <option value="domain">WHOIS</option>
+              <option value="person">PERSON</option>
+              <option value="breach">BREACH</option>
+              <option value="twitter">TWITTER</option>
+              <option value="vk">VK</option>
+              <option value="github">GITHUB</option>
+              <option value="telegram">TELEGRAM</option>
+              <option value="social">SOCIAL ALL</option>
+              <option value="tiktok">TIKTOK</option>
+              <option value="instagram">INSTAGRAM</option>
+            </select>
+          </div>
+          <div class="search-wrap">
+            <input type="text" id="searchInput" placeholder="Введи телефон, username, email або IP..." autocomplete="off" onkeydown="if(event.key==='Enter')doScan()">
+          </div>
+          <button id="scanBtn" onclick="doScan()">START SCAN</button>
+        </div>
+      </div>
+      <div id="progressBar"><div id="progressFill"></div></div>
+
+      <!-- PANELS -->
+      <div class="panels-grid">
+
+        <!-- STAT CARDS -->
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="sc-label">Status</div>
+            <span class="sc-icon">⚡</span>
+            <div class="sc-val" id="scStatus">IDLE</div>
+            <div class="sc-sub" id="scStatusSub">Очікую запит</div>
+          </div>
+          <div class="stat-card orange">
+            <div class="sc-label">Target</div>
+            <span class="sc-icon">🎯</span>
+            <div class="sc-val" id="scTarget">—</div>
+            <div class="sc-sub" id="scTargetSub">Не задано</div>
+          </div>
+          <div class="stat-card green">
+            <div class="sc-label">Found</div>
+            <span class="sc-icon">✓</span>
+            <div class="sc-val" id="scFound">—</div>
+            <div class="sc-sub" id="scFoundSub">Результатів</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="sc-label">Platform</div>
+            <span class="sc-icon">🌍</span>
+            <div class="sc-val" id="scPlatform">—</div>
+            <div class="sc-sub" id="scPlatformSub">Режим</div>
+          </div>
+          <div class="stat-card red">
+            <div class="sc-label">Operator</div>
+            <span class="sc-icon">📡</span>
+            <div class="sc-val" id="scOperator">—</div>
+            <div class="sc-sub" id="scOperatorSub">Оператор/ISP</div>
+          </div>
         </div>
 
-        <div class="main-content">
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fab fa-twitter"></i>
-                        </div>
-                        <div>
-                            <div class="stat-title">Social Accounts Found</div>
-                            <div class="stat-value" id="socialCount">14</div>
-                            <div class="stat-sub">Across 8 platforms</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-database"></i>
-                        </div>
-                        <div>
-                            <div class="stat-title">Leaked Databases</div>
-                            <div class="stat-value" id="leakCount">8</div>
-                            <div class="stat-sub">3,240 total records</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div>
-                            <div class="stat-title">Phone Records</div>
-                            <div class="stat-value" id="phoneNumber">+1 (555) 123-4567</div>
-                            <div class="stat-sub">Verizon • Active</div>
-                        </div>
-                    </div>
-                </div>
+        <!-- PANEL 1: SOCIAL / PROFILE -->
+        <div class="panel-card" id="p1">
+          <div class="panel-head">
+            <div class="panel-dot blue"></div>
+            <span class="panel-title" id="p1title">SOCIAL ACCOUNTS</span>
+            <span class="panel-badge" id="p1badge">WAITING</span>
+          </div>
+          <div class="panel-body" id="p1body">
+            <div class="empty-state">
+              <div class="icon">👤</div>
+              <div class="msg">Не сканировано</div>
             </div>
-
-            <div class="overview-grid">
-                <div class="grid-card">
-                    <div class="grid-title">
-                        <i class="fas fa-user-circle"></i> Social Media Profiles
-                    </div>
-                    <div class="social-list" id="socialList"></div>
-                </div>
-                <div class="grid-card">
-                    <div class="grid-title">
-                        <i class="fas fa-exclamation-triangle"></i> Data Breaches
-                    </div>
-                    <div class="breach-list" id="breachList"></div>
-                </div>
-                <div class="grid-card">
-                    <div class="grid-title">
-                        <i class="fas fa-map-marked-alt"></i> Geo Location
-                    </div>
-                    <div id="map"></div>
-                    <div class="geo-info" id="geoInfo"></div>
-                </div>
-            </div>
-
-            <div class="details-grid">
-                <div class="info-card">
-                    <div class="grid-title">
-                        <i class="fas fa-network-wired"></i> IP / ASN Details
-                    </div>
-                    <div id="ipDetails"></div>
-                </div>
-                <div class="info-card">
-                    <div class="grid-title">
-                        <i class="fas fa-phone"></i> Phone Information
-                    </div>
-                    <div id="phoneDetails"></div>
-                    <div class="phone-actions">
-                        <button class="action-btn" id="copyPhone">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                        <button class="action-btn" id="callPhone">
-                            <i class="fas fa-phone"></i> Call
-                        </button>
-                        <button class="action-btn" id="smsPhone">
-                            <i class="fas fa-sms"></i> SMS
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="details-grid">
-                <div class="info-card">
-                    <div class="grid-title">
-                        <i class="fas fa-envelope"></i> Email Leaks
-                    </div>
-                    <div class="leak-tags" id="leakTags"></div>
-                    <div id="leakDetails"></div>
-                </div>
-                <div class="info-card">
-                    <div class="grid-title">
-                        <i class="fas fa-globe"></i> Domain Details
-                    </div>
-                    <div id="domainDetails"></div>
-                    <button class="action-btn" id="whoisBtn" style="margin-top: 15px;">
-                        <i class="fas fa-external-link-alt"></i> Whois Lookup
-                    </button>
-                </div>
-            </div>
-
-            <div class="progress-container" id="progressContainer">
-                <div class="progress-header">
-                    <div>
-                        <h3>Scan Progress</h3>
-                        <div id="progressPercent">0%</div>
-                    </div>
-                    <div id="scanTimer">00:00</div>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-steps" id="progressSteps"></div>
-            </div>
-
-            <div class="export-actions">
-                <button class="export-btn" id="exportPdf">
-                    <i class="fas fa-file-pdf"></i> Export PDF
-                </button>
-                <button class="export-btn" id="exportJson">
-                    <i class="fas fa-file-code"></i> Export JSON
-                </button>
-                <button class="export-btn" id="exportCsv">
-                    <i class="fas fa-file-csv"></i> Export CSV
-                </button>
-                <button class="export-btn" id="exportLogs">
-                    <i class="fas fa-clipboard-list"></i> Export Logs
-                </button>
-            </div>
+          </div>
         </div>
+
+        <!-- PANEL 2: PHONE INFO / TARGET INTEL -->
+        <div class="panel-card" id="p2">
+          <div class="panel-head">
+            <div class="panel-dot orange"></div>
+            <span class="panel-title" id="p2title">TARGET INTELLIGENCE</span>
+            <span class="panel-badge" id="p2badge">WAITING</span>
+          </div>
+          <div class="panel-body" id="p2body">
+            <div class="empty-state">
+              <div class="icon">🎯</div>
+              <div class="msg">Не сканировано</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 3: GEO / NETWORK -->
+        <div class="panel-card" id="p3">
+          <div class="panel-head">
+            <div class="panel-dot green"></div>
+            <span class="panel-title" id="p3title">GEO / NETWORK</span>
+            <span class="panel-badge" id="p3badge">WAITING</span>
+          </div>
+          <div class="panel-body" id="p3body">
+            <div class="empty-state">
+              <div class="icon">🌐</div>
+              <div class="msg">Не сканировано</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 4: ADDITIONAL DATA -->
+        <div class="panel-card" id="p4">
+          <div class="panel-head">
+            <div class="panel-dot yellow"></div>
+            <span class="panel-title" id="p4title">ADDITIONAL DATA</span>
+            <span class="panel-badge" id="p4badge">—</span>
+          </div>
+          <div class="panel-body" id="p4body">
+            <div class="empty-state">
+              <div class="icon">📊</div>
+              <div class="msg">Дані відсутні</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 5: MAP -->
+        <div class="panel-card" id="p5">
+          <div class="panel-head">
+            <div class="panel-dot red"></div>
+            <span class="panel-title">LOCATION MAP</span>
+            <span class="panel-badge" id="mapBadge">NO FIX</span>
+          </div>
+          <div class="panel-body" style="padding:0;overflow:hidden">
+            <div class="map-placeholder" id="mapPlaceholder">
+              <div class="big">🗺</div>
+              <span>Чекаю координати</span>
+            </div>
+            <div id="map" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- PANEL 6: PLATFORMS / LINKS -->
+        <div class="panel-card" id="p6">
+          <div class="panel-head">
+            <div class="panel-dot blue"></div>
+            <span class="panel-title" id="p6title">PLATFORMS FOUND</span>
+            <span class="panel-badge" id="p6badge">—</span>
+          </div>
+          <div class="panel-body" id="p6body">
+            <div class="empty-state">
+              <div class="icon">🔗</div>
+              <div class="msg">Немає даних</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script>
-        const mockData = {
-            social: [
-                { platform: "Twitter", icon: "fab fa-twitter", color: "#1DA1F2", user: "@johndoe", name: "John Doe", status: "found" },
-                { platform: "Facebook", icon: "fab fa-facebook", color: "#1877F2", user: "johndoe", name: "John Doe", status: "found" },
-                { platform: "Instagram", icon: "fab fa-instagram", color: "#E4405F", user: "@johndoe_real", name: "John Doe", status: "found" },
-                { platform: "LinkedIn", icon: "fab fa-linkedin", color: "#0A66C2", user: "in/johndoe", name: "John Doe", status: "found" },
-                { platform: "GitHub", icon: "fab fa-github", color: "#181717", user: "johndoe", name: "John Doe", status: "found" },
-                { platform: "Telegram", icon: "fab fa-telegram", color: "#26A5E4", user: "@johndoe", name: "John Doe", status: "missing" },
-                { platform: "VK", icon: "fab fa-vk", color: "#4C75A3", user: "id123456", name: "John Doe", status: "found" },
-                { platform: "Steam", icon: "fab fa-steam", color: "#000000", user: "johndoe_gamer", name: "John Doe", status: "missing" }
-            ],
-            breaches: [
-                { source: "Dehashed", type: "Password Breach", details: "Leaked in 2021 Adobe breach, contains email and hashed password" },
-                { source: "HaveIBeenPwned", type: "Exposed Emails", details: "Found in Collection #1 (2019), 772M records total" },
-                { source: "Snusbase", type: "Leaked Records", details: "Private database dump from 2023, includes IP and location data" },
-                { source: "BreachForums", type: "Credentials", details: "Credential stuffing list from 2022, contains username/password pairs" }
-            ],
-            geo: {
-                city: "New York",
-                region: "NY",
-                country: "United States",
-                zip: "10001",
-                timezone: "EST",
-                localTime: "14:30:45",
-                coords: [40.7128, -74.0060]
-            },
-            ip: {
-                address: "192.168.1.100",
-                asn: "AS15169",
-                hostname: "google-public-dns-a.google.com",
-                range: "192.168.0.0/16",
-                company: "Google LLC",
-                anycast: true,
-                privacy: false
-            },
-            phone: {
-                number: "+15551234567",
-                carrier: "Verizon Wireless",
-                truecaller: "John Doe",
-                valid: true
-            },
-            leaks: [
-                { name: "Collection #1", count: "772M records", date: "2019-01-01" },
-                { name: "Combo List", count: "1.2B combos", date: "2020-03-15" },
-                { name: "DarkWeb Leak", count: "5.4M emails", date: "2023-11-20" },
-                { name: "Adobe Breach", count: "153M accounts", date: "2013-10-04" }
-            ],
-            domain: {
-                name: "example.com",
-                registrar: "GoDaddy",
-                created: "1995-08-15",
-                ssl: true,
-                expiry: "2025-12-31"
-            }
-        };
+  <!-- STATUSBAR -->
+  <div class="statusbar">
+    <div class="sb-segment"><span style="color:var(--blue)">◉</span> <span id="sbMode">PHONE LOOKUP</span></div>
+    <div class="sb-segment"><span>API:</span> <span style="color:var(--green)">Twitter ✓</span> <span style="color:var(--green)">VK ✓</span> <span style="color:var(--green)">NumVerify ✓</span> <span style="color:var(--green)">IPInfo ✓</span></div>
+    <div class="sb-segment"><span id="sbProxy">PROXY: OFF</span></div>
+    <div class="sb-segment"><span id="sbScans">Scans: 0</span></div>
+    <div class="sb-segment" style="margin-left:auto"><span id="sbDate"></span></div>
+  </div>
+</div>
 
-        const scanSteps = [
-            { name: "Username Lookup", desc: "Searching 50+ platforms for target username" },
-            { name: "IP Address Scan", desc: "Geolocation and ISP information retrieval" },
-            { name: "Data Breach Search", desc: "Scanning 15+ leaked databases for matches" },
-            { name: "Social Media Profiling", desc: "Extracting profile metadata and connections" },
-            { name: "Phone Number Analysis", desc: "Carrier lookup and number validation" },
-            { name: "Domain Reconnaissance", desc: "WHOIS lookup and DNS records analysis" },
-            { name: "Report Generation", desc: "Compiling all data into final report" }
-        ];
+<script>
+let currentMode = 'phone';
+let currentProxy = 'none';
+let scanCount = 0;
+let lastResult = null;
+let mapInstance = null;
+let mapMarker = null;
 
-        let map = null;
-        let scanInterval = null;
-        let scanStartTime = null;
-        let currentStep = 0;
-        let progress = 0;
+// ── STARS ──
+(function(){
+  const c = document.getElementById('stars');
+  for(let i=0;i<120;i++){
+    const s = document.createElement('span');
+    const sz = Math.random()*2.5+0.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;background:#${['aaccff','88bbff','ffffff','6699ff'][Math.floor(Math.random()*4)]};--d:${2+Math.random()*4}s;--delay:-${Math.random()*4}s`;
+    c.appendChild(s);
+  }
+})();
 
-        function initMap() {
-            map = L.map('map').setView(mockData.geo.coords, 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-            L.marker(mockData.geo.coords).addTo(map)
-                .bindPopup(`<b>${mockData.geo.city}</b><br>${mockData.geo.country}`)
-                .openPopup();
-        }
+// ── CLOCK ──
+function updateClock(){
+  const n=new Date();
+  document.getElementById('clock').textContent=n.toLocaleTimeString('uk-UA');
+  document.getElementById('sbDate').textContent=n.toLocaleDateString('uk-UA')+' '+n.toLocaleTimeString('uk-UA');
+}
+setInterval(updateClock,1000);updateClock();
 
-        function renderSocialList() {
-            const container = document.getElementById('socialList');
-            container.innerHTML = mockData.social.map(item => `
-                <div class="social-item" data-platform="${item.platform}">
-                    <div class="social-icon" style="background: ${item.color}">
-                        <i class="${item.icon}"></i>
-                    </div>
-                    <div class="social-name">${item.platform}</div>
-                    <div class="social-user">${item.user}</div>
-                    <div class="social-status status-${item.status}">
-                        ${item.status === 'found' ? '✓ Found' : '— Missing'}
-                    </div>
-                </div>
-            `).join('');
-        }
+// ── TOAST ──
+function showToast(msg,type='info',duration=3000){
+  const tc=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  const icons={success:'✓',error:'✗',info:'ℹ'};
+  t.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300)},duration);
+}
 
-        function renderBreachList() {
-            const container = document.getElementById('breachList');
-            container.innerHTML = mockData.breaches.map((breach, i) => `
-                <div class="breach-item" data-index="${i}">
-                    <div class="breach-source">
-                        <div class="breach-name">${breach.source}</div>
-                        <div class="breach-type">${breach.type}</div>
-                    </div>
-                    <div class="breach-details">${breach.details}</div>
-                </div>
-            `).join('');
-        }
+// ── MODE ──
+const PLACEHOLDERS={
+  phone:'Введи номер: +380xxxxxxxxx або +7xxxxxxxxxx або +77xxxxxxxxx',
+  username:'Введи @username або handle для пошуку на 10+ платформах',
+  email:'Введи email адресу для OSINT перевірки',
+  ip:'Введи IP адресу або домен',
+  domain:'Введи домен (example.com) для WHOIS',
+  person:'Введи ПІБ або Ім\'я Прізвище для OSINT пошуку',
+  breach:'Введи email або username для перевірки витоків',
+  twitter:'Введи @username або username для Twitter/X',
+  vk:'Введи username, ID або посилання VK',
+  github:'Введи GitHub username або @handle',
+  telegram:'Введи @username або канал Telegram',
+  social:'Введи @username — TikTok + Instagram + Facebook',
+  tiktok:'Введи @username для глибокого скану TikTok',
+  instagram:'Введи @username для глибокого скану Instagram',
+};
+const MODE_LABELS={
+  phone:'PHONE LOOKUP', username:'USERNAME SHERLOCK', email:'EMAIL OSINT',
+  ip:'IP SCAN', domain:'DOMAIN WHOIS', person:'PERSON SEARCH',
+  breach:'BREACH CHECK', twitter:'TWITTER / X', vk:'VKONTAKTE',
+  github:'GITHUB', telegram:'TELEGRAM', social:'SOCIAL ALL',
+  tiktok:'TIKTOK DEEP', instagram:'INSTAGRAM DEEP',
+};
 
-        function renderGeoInfo() {
-            const container = document.getElementById('geoInfo');
-            container.innerHTML = `
-                <div class="geo-item">
-                    <div class="geo-label">City</div>
-                    <div>${mockData.geo.city}</div>
-                </div>
-                <div class="geo-item">
-                    <div class="geo-label">Region</div>
-                    <div>${mockData.geo.region}</div>
-                </div>
-                <div class="geo-item">
-                    <div class="geo-label">Country</div>
-                    <div>${mockData.geo.country}</div>
-                </div>
-                <div class="geo-item">
-                    <div class="geo-label">ZIP Code</div>
-                    <div>${mockData.geo.zip}</div>
-                </div>
-                <div class="geo-item">
-                    <div class="geo-label">Local Time</div>
-                    <div>${mockData.geo.localTime}</div>
-                </div>
-                <div class="geo-item">
-                    <div class="geo-label">Timezone</div>
-                    <div>${mockData.geo.timezone}</div>
-                </div>
-            `;
-        }
+function setMode(m, el){
+  currentMode = m;
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.getElementById('modeSelect').value = m;
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInput').placeholder = PLACEHOLDERS[m] || '...';
+  document.getElementById('sbMode').textContent = MODE_LABELS[m] || m.toUpperCase();
+  resetPanels();
+}
+function setModeFromSelect(){
+  const m = document.getElementById('modeSelect').value;
+  setMode(m, null);
+}
 
-        function renderIpDetails() {
-            const container = document.getElementById('ipDetails');
-            container.innerHTML = `
-                <div class="info-row">
-                    <div class="info-label">IP Address</div>
-                    <div class="info-value">${mockData.ip.address}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">ASN</div>
-                    <div class="info-value">${mockData.ip.asn}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Hostname</div>
-                    <div class="info-value">${mockData.ip.hostname}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Range</div>
-                    <div class="info-value">${mockData.ip.range}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Company</div>
-                    <div class="info-value">${mockData.ip.company}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Anycast</div>
-                    <div class="info-value"><span class="flag ${mockData.ip.anycast ? 'flag-yes' : 'flag-no'}">${mockData.ip.anycast ? 'YES' : 'NO'}</span></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Privacy</div>
-                    <div class="info-value"><span class="flag ${mockData.ip.privacy ? 'flag-yes' : 'flag-no'}">${mockData.ip.privacy ? 'YES' : 'NO'}</span></div>
-                </div>
-            `;
-        }
+// ── NAV TABS ──
+function switchTab(el, tab){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const msgs={profiles:'Profiles — обери соцмережу зліва і введи username', geo:'Geo — введи IP або домен для геолокації', reports:'Reports — результати останнього скану збережені'};
+  if(msgs[tab]) showToast(msgs[tab],'info');
+}
 
-        function renderPhoneDetails() {
-            const container = document.getElementById('phoneDetails');
-            container.innerHTML = `
-                <div class="info-row">
-                    <div class="info-label">Number</div>
-                    <div class="info-value">${mockData.phone.number}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Carrier</div>
-                    <div class="info-value">${mockData.phone.carrier}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Truecaller Name</div>
-                    <div class="info-value">${mockData.phone.truecaller}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Valid Number</div>
-                    <div class="info-value"><span class="flag flag-yes">✅ Verified</span></div>
-                </div>
-            `;
-        }
+// ── PROGRESS ──
+function setProgress(pct){
+  document.getElementById('progressFill').style.width=pct+'%';
+}
 
-        function renderLeakTags() {
-            const container = document.getElementById('leakTags');
-            container.innerHTML = mockData.leaks.map(leak => `
-                <div class="leak-tag" data-leak="${leak.name}">
-                    ${leak.name} <small>(${leak.count})</small>
-                </div>
-            `).join('');
-        }
+// ── SCAN ──
+async function doScan(){
+  const query = document.getElementById('searchInput').value.trim();
+  if(!query){showToast('Введи запит для скану','error');return;}
+  const btn = document.getElementById('scanBtn');
+  btn.textContent='SCANNING...';btn.classList.add('scanning');
+  setProgress(5);
+  document.getElementById('scStatus').textContent='SCAN';
+  document.getElementById('scStatus').className='sc-val loading';
+  document.getElementById('scTarget').textContent=query.length>12?query.slice(0,12)+'…':query;
+  document.getElementById('scTargetSub').textContent=currentMode.toUpperCase();
+  setLoadingPanels();
+  scanCount++;
+  document.getElementById('sbScans').textContent=`Scans: ${scanCount}`;
 
-        function renderDomainDetails() {
-            const container = document.getElementById('domainDetails');
-            container.innerHTML = `
-                <div class="info-row">
-                    <div class="info-label">Domain</div>
-                    <div class="info-value">${mockData.domain.name}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Registrar</div>
-                    <div class="info-value">${mockData.domain.registrar}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Created</div>
-                    <div class="info-value">${mockData.domain.created}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">SSL Valid</div>
-                    <div class="info-value"><span class="flag ${mockData.domain.ssl ? 'flag-yes' : 'flag-no'}">${mockData.domain.ssl ? 'ACTIVE' : 'INVALID'}</span></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Expires</div>
-                    <div class="info-value">${mockData.domain.expiry}</div>
-                </div>
-            `;
-        }
+  const endpoints={
+    phone:'/api/phone', username:'/api/username/search', email:'/api/email',
+    ip:'/api/ip', domain:'/api/domain', twitter:'/api/username/twitter',
+    vk:'/api/username/vk', github:'/api/username/github',
+    telegram:'/api/username/telegram', social:'/api/username/search',
+    tiktok:'/api/username/search', instagram:'/api/username/search',
+    person:'/api/person', breach:'/api/breach',
+  };
 
-        function startScan() {
-            document.getElementById('progressContainer').style.display = 'block';
-            progress = 0;
-            currentStep = 0;
-            scanStartTime = new Date();
-            updateTimer();
-            updateProgress();
-            simulateScan();
-        }
+  try {
+    setProgress(30);
+    const r = await fetch(endpoints[currentMode]||'/api/phone',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query})
+    });
+    setProgress(80);
+    const data = await r.json();
+    lastResult = {mode:currentMode, query, data, timestamp:new Date().toISOString()};
+    setProgress(100);
+    renderResult(data);
+    document.getElementById('scStatus').textContent='DONE';
+    document.getElementById('scStatus').className='sc-val found';
+    showToast('Скан завершено','success',2000);
+  } catch(e){
+    document.getElementById('scStatus').textContent='ERR';
+    document.getElementById('scStatus').className='sc-val notfound';
+    showToast('Помилка з\'єднання: '+e.message,'error');
+    resetPanels();
+  }
+  setTimeout(()=>setProgress(0),600);
+  btn.textContent='START SCAN';btn.classList.remove('scanning');
+}
 
-        function simulateScan() {
-            clearInterval(scanInterval);
-            scanInterval = setInterval(() => {
-                progress += Math.random() * 5 + 1;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(scanInterval);
-                }
-                updateProgress();
-            }, 200);
-        }
+function setLoadingPanels(){
+  ['p1body','p2body','p3body','p4body','p6body'].forEach(id=>{
+    document.getElementById(id).innerHTML=`<div class="loader"><div class="loader-bars">${Array(5).fill('<div class="loader-bar"></div>').join('')}</div><div class="loader-text">SCANNING...</div></div>`;
+  });
+}
+function resetPanels(){
+  ['p1body','p2body','p3body','p4body','p6body'].forEach(id=>{
+    document.getElementById(id).innerHTML='<div class="empty-state"><div class="icon">⌖</div><div class="msg">Не сканировано</div></div>';
+  });
+  hideMap();
+}
 
-        function updateProgress() {
-            document.getElementById('progressFill').style.width = `${progress}%`;
-            document.getElementById('progressPercent').textContent = `${Math.round(progress)}%`;
-            const stepIndex = Math.floor((progress / 100) * scanSteps.length);
-            if (stepIndex > currentStep) {
-                currentStep = stepIndex;
-                updateSteps();
-            }
-        }
+// ── RENDER ──
+function renderResult(data){
+  const m=currentMode;
+  if(m==='phone') renderPhone(data);
+  else if(m==='email') renderEmail(data);
+  else if(m==='ip') renderIP(data);
+  else if(m==='domain') renderDomain(data);
+  else if(m==='twitter') renderTwitter(data);
+  else if(m==='vk') renderVK(data);
+  else if(m==='github') renderGitHub(data);
+  else if(m==='telegram') renderTelegram(data);
+  else if(m==='person') renderPerson(data);
+  else if(m==='breach') renderBreach(data);
+  else renderUsername(data);
+}
 
-        function updateSteps() {
-            const container = document.getElementById('progressSteps');
-            container.innerHTML = scanSteps.map((step, i) => `
-                <div class="step ${i < currentStep ? 'completed' : i === currentStep ? 'active' : ''}">
-                    <div class="step-icon">
-                        <i class="fas fa-${i < currentStep ? 'check' : i === currentStep ? 'spinner fa-spin' : 'clock'}"></i>
-                    </div>
-                    <div class="step-text">
-                        <div class="step-name">${step.name}</div>
-                        <div class="step-desc">${step.desc}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
+function rows(obj){
+  return Object.entries(obj).map(([k,v])=>{
+    if(v===null||v===undefined||v==='') return '';
+    let cls='d-val';
+    if(v===true||v==='YES'||v==='yes'||String(v).includes('✓')) cls+=' yes';
+    else if(v===false||v==='NO'||v==='no') cls+=' no';
+    const display = v===true?'✓ YES' : v===false?'✗ NO' : String(v).replace(/\\/g,'');
+    return `<div class="d-row"><span class="d-key">${k}</span><span class="${cls}">${display}</span></div>`;
+  }).join('');
+}
 
-        function updateTimer() {
-            setInterval(() => {
-                if (!scanStartTime) return;
-                const now = new Date();
-                const diff = Math.floor((now - scanStartTime) / 1000);
-                const mins = Math.floor(diff / 60).toString().padStart(2, '0');
-                const secs = (diff % 60).toString().padStart(2, '0');
-                document.getElementById('scanTimer').textContent = `${mins}:${secs}`;
-            }, 1000);
-        }
+function profileBox(avatar, name, username, bio, platform){
+  const ava = avatar ? `<img class="profile-ava" src="${avatar}" onerror="this.style.display='none'">` : `<div class="profile-ava-ph">👤</div>`;
+  return `<div class="profile-box">${ava}<div class="profile-info"><div class="profile-name">${name||username||'—'}</div><div class="profile-user">@${username||'—'} ${platform?`<span class="tag">${platform}</span>`:''}</div><div class="profile-bio">${bio||''}</div></div></div>`;
+}
 
-        function exportPdf() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.setFontSize(20);
-            doc.text('Probiv Bot Report', 20, 20);
-            doc.setFontSize(12);
-            doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 30);
-            doc.save('probiv-report.pdf');
-        }
+// ── PHONE ──
+function renderPhone(d){
+  const op = d.operator||d.numverify_carrier||d.carrier||'—';
+  const country = d.country||d.numverify_country||'—';
+  const region = d.region||'—';
+  document.getElementById('scFound').textContent = d.valid?'VALID':'INVALID';
+  document.getElementById('scFound').className = 'sc-val '+(d.valid?'found':'notfound');
+  document.getElementById('scFoundSub').textContent = d.valid?'Номер дійсний':'Номер невалідний';
+  document.getElementById('scPlatform').textContent = country;
+  document.getElementById('scPlatformSub').textContent = 'Країна';
+  document.getElementById('scOperator').textContent = op.length>8?op.slice(0,8)+'…':op;
+  document.getElementById('scOperatorSub').textContent = 'Оператор';
+  document.getElementById('p1title').textContent='SOCIAL ACCOUNTS';
+  document.getElementById('p1badge').textContent='PHONE';
+  document.getElementById('p1body').innerHTML=rows({
+    'Номер':d.e164||d.raw||'—','Міжнар':d.intl||'—','Нац':d.national||'—',
+    'Валідний':d.valid,'Тип':d.type||'—','Країна':country,'Регіон':region,'Оператор':op,
+  });
+  document.getElementById('p2title').textContent='TARGET INTELLIGENCE';
+  document.getElementById('p2body').innerHTML=rows({
+    'Тайм-зони':(d.timezones||[]).join(', ')||'—',
+    'NumVerify оп':d.numverify_carrier||'—',
+    'NumVerify тип':d.numverify_line||'—',
+    'HLR статус':d.hlr_status||'—',
+    'HLR мережа':d.hlr_network||'—',
+    'HLR перенос':d.hlr_ported!==undefined?String(d.hlr_ported):'—',
+  });
+  document.getElementById('p3title').textContent='GEO / NETWORK';
+  document.getElementById('p3body').innerHTML=rows({'Країна':country,'Регіон':region,'Оператор':op});
+  document.getElementById('p4body').innerHTML='<div class="empty-state"><div class="icon">📞</div><div class="msg">Соціальних аккаунтів не знайдено</div></div>';
+  document.getElementById('p6body').innerHTML='<div class="empty-state"><div class="icon">💡</div><div class="msg">Спробуй Username mode для пошуку соцмереж</div></div>';
+}
 
-        function exportJson() {
-            const dataStr = JSON.stringify(mockData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'probiv-data.json';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+// ── EMAIL ──
+function renderEmail(d){
+  document.getElementById('scFound').textContent=d.mx_valid?'MX ✓':'MX ✗';
+  document.getElementById('scFound').className='sc-val '+(d.mx_valid?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.domain||'';
+  document.getElementById('scPlatform').textContent='EMAIL';
+  document.getElementById('scOperator').textContent=d.google_hits||0;
+  document.getElementById('scOperatorSub').textContent='Google hits';
+  document.getElementById('p1body').innerHTML=rows({
+    'Email':d.email,'Домен':d.domain,'MX Valid':d.mx_valid,
+    'MX records':(d.mx||[]).slice(0,3).join(', ')||'—',
+  });
+  document.getElementById('p2body').innerHTML=rows({
+    'Google hits':d.google_hits||0,
+    'Gravatar':d.socials?.Gravatar,
+    'HaveIBeenPwned':d.socials?.HaveIBeenPwned,
+  });
+  const links=d.google_top||[];
+  document.getElementById('p6body').innerHTML=links.length?
+    links.map(l=>`<div class="d-row"><a class="ext-link" href="${l}" target="_blank">${l.replace(/^https?:\/\//,'').slice(0,45)}…</a></div>`).join('')
+    :'<div class="empty-state"><div class="msg">Google results not found</div></div>';
+}
 
-        function exportCsv() {
-            let csv = 'Platform,Username,Status\n';
-            mockData.social.forEach(item => {
-                csv += `${item.platform},${item.user},${item.status}\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'probiv-social.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+// ── IP ──
+function renderIP(d){
+  document.getElementById('scFound').textContent=d.ip?'FOUND':'ERROR';
+  document.getElementById('scFound').className='sc-val '+(d.ip?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.ip||'—';
+  document.getElementById('scPlatform').textContent=d.country||'—';
+  document.getElementById('scPlatformSub').textContent='Країна';
+  document.getElementById('scOperator').textContent=(d.org||d.isp||'—').slice(0,12);
+  document.getElementById('scOperatorSub').textContent='ISP/Org';
+  document.getElementById('p1body').innerHTML=rows({
+    'IP':d.ip,'Hostname':d.hostname||'—','PTR':d.ptr||'—','Country':d.country,
+    'Region':d.region,'City':d.city,'Postal':d.postal||'—','Timezone':d.timezone||'—',
+  });
+  document.getElementById('p2body').innerHTML=rows({
+    'ISP':d.isp||'—','Org':d.org||d.as||'—','AS':d.as||'—',
+    'Proxy':d.proxy,'Hosting':d.hosting,'Mobile':d.mobile,
+  });
+  document.getElementById('p3body').innerHTML=rows({'Lat':d.lat||'—','Lon':d.lon||'—','Loc':d.loc||'—'});
+  if(d.lat&&d.lon) showMap(parseFloat(d.lat),parseFloat(d.lon),`${d.city||''}, ${d.country||''}`);
+}
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard: ' + text);
-            });
-        }
+// ── DOMAIN ──
+function renderDomain(d){
+  document.getElementById('scFound').textContent=d.registrar?'FOUND':'—';
+  document.getElementById('scFound').className='sc-val found';
+  document.getElementById('scFoundSub').textContent=d.domain||'—';
+  document.getElementById('scPlatform').textContent=d.ip||'—';
+  document.getElementById('scPlatformSub').textContent='IP Address';
+  document.getElementById('p1body').innerHTML=rows({
+    'Domain':d.domain,'Registrar':d.registrar||'—','Created':d.created||'—',
+    'Expires':d.expires||'—','Org':d.org||'—','Country':d.country||'—',
+    'Status':Array.isArray(d.status)?d.status[0]:d.status||'—',
+  });
+  document.getElementById('p2body').innerHTML=rows({
+    'IP':d.ip||'—','SSL':d.ssl,'HTTP Status':d.http_status||'—',
+    'Server':d.server||'—','Powered by':d.powered_by||'—',
+    'NS':(d.ns||[]).slice(0,3).join(', ')||'—',
+    'Emails':(d.emails||[]).join(', ')||'—',
+  });
+  if(d.dns){
+    const dns=d.dns;
+    document.getElementById('p3body').innerHTML=Object.entries(dns).map(([t,vals])=>
+      `<div class="d-row"><span class="d-key">${t}</span><span class="d-val">${Array.isArray(vals)?vals.slice(0,2).join(', '):vals}</span></div>`
+    ).join('');
+  }
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initMap();
-            renderSocialList();
-            renderBreachList();
-            renderGeoInfo();
-            renderIpDetails();
-            renderPhoneDetails();
-            renderLeakTags();
-            renderDomainDetails();
-            updateSteps();
+// ── TWITTER ──
+function renderTwitter(d){
+  document.getElementById('scFound').textContent=d.found?'FOUND':'NOT FOUND';
+  document.getElementById('scFound').className='sc-val '+(d.found?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.found?`@${d.username}`:'';
+  document.getElementById('scPlatform').textContent='TWITTER';
+  document.getElementById('scOperator').textContent=d.followers?d.followers.toLocaleString():'—';
+  document.getElementById('scOperatorSub').textContent='Підписники';
+  if(!d.found){resetPanels();return;}
+  document.getElementById('p1body').innerHTML=profileBox(d.avatar,d.name,d.username,d.bio,'Twitter')+rows({'ID':d.id||'—','Verified':d.verified,'Location':d.location||'—','Created':d.created?d.created.split('T')[0]:'—'});
+  document.getElementById('p2body').innerHTML=rows({'Followers':d.followers?.toLocaleString(),'Following':d.following?.toLocaleString(),'Tweets':d.tweets?.toLocaleString()});
+  document.getElementById('p6body').innerHTML=`<div class="d-row"><a class="ext-link" href="${d.url}" target="_blank">OPEN TWITTER PROFILE →</a></div>`;
+}
 
-            document.getElementById('scanBtn').addEventListener('click', startScan);
-            document.getElementById('exportPdf').addEventListener('click', exportPdf);
-            document.getElementById('exportJson').addEventListener('click', exportJson);
-            document.getElementById('exportCsv').addEventListener('click', exportCsv);
-            document.getElementById('copyPhone').addEventListener('click', () => copyToClipboard(mockData.phone.number));
-            document.getElementById('callPhone').addEventListener('click', () => window.open('tel:' + mockData.phone.number));
-            document.getElementById('smsPhone').addEventListener('click', () => window.open('sms:' + mockData.phone.number));
-            document.getElementById('whoisBtn').addEventListener('click', () => window.open('https://whois.com/whois/' + mockData.domain.name, '_blank'));
+// ── VK ──
+function renderVK(d){
+  document.getElementById('scFound').textContent=d.found?'FOUND':'NOT FOUND';
+  document.getElementById('scFound').className='sc-val '+(d.found?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.found?d.name:'';
+  document.getElementById('scPlatform').textContent='VKONTAKTE';
+  document.getElementById('scOperator').textContent=d.followers?d.followers.toLocaleString():'—';
+  document.getElementById('scOperatorSub').textContent='Підписники';
+  if(!d.found){resetPanels();return;}
+  document.getElementById('p1body').innerHTML=profileBox(d.avatar,d.name,d.username,d.status,'VK')+rows({'ID':d.id,'Verified':d.verified});
+  document.getElementById('p2body').innerHTML=rows({'Followers':d.followers?.toLocaleString(),'Friends':d.friends?.toLocaleString(),'Photos':d.photos,'Videos':d.videos,'Groups':d.groups});
+  document.getElementById('p3body').innerHTML=rows({'Country':d.country||'—','City':d.city||'—','BDate':d.bdate||'—'});
+  document.getElementById('p6body').innerHTML=`<div class="d-row"><a class="ext-link" href="${d.url}" target="_blank">OPEN VK PROFILE →</a></div>`;
+}
 
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('.breach-item')) {
-                    const item = e.target.closest('.breach-item');
-                    item.classList.toggle('expanded');
-                }
-                if (e.target.closest('.leak-tag')) {
-                    document.querySelectorAll('.leak-tag').forEach(tag => tag.classList.remove('active'));
-                    e.target.closest('.leak-tag').classList.add('active');
-                }
-                if (e.target.closest('.social-item')) {
-                    const platform = e.target.closest('.social-item').dataset.platform;
-                    const social = mockData.social.find(s => s.platform === platform);
-                    if (social.status === 'found') {
-                        alert(`Opening ${platform} profile for ${social.user}`);
-                    }
-                }
-            });
-        });
+// ── GITHUB ──
+function renderGitHub(d){
+  document.getElementById('scFound').textContent=d.found?'FOUND':'NOT FOUND';
+  document.getElementById('scFound').className='sc-val '+(d.found?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.found?d.username:'';
+  document.getElementById('scPlatform').textContent='GITHUB';
+  document.getElementById('scOperator').textContent=d.followers||'—';
+  document.getElementById('scOperatorSub').textContent='Followers';
+  if(!d.found){resetPanels();return;}
+  document.getElementById('p1body').innerHTML=profileBox(d.avatar,d.name,d.username,d.bio,'GitHub')+rows({'ID':d.id,'Company':d.company||'—','Location':d.location||'—','Email':d.email||'—','Twitter':d.twitter||'—','Blog':d.blog||'—','Hireable':d.hireable});
+  document.getElementById('p2body').innerHTML=rows({'Public Repos':d.public_repos,'Public Gists':d.public_gists,'Followers':d.followers,'Following':d.following,'Created':d.created,'Updated':d.updated,'Site Admin':d.site_admin});
+  document.getElementById('p6body').innerHTML=`<div class="d-row"><a class="ext-link" href="${d.url}" target="_blank">OPEN GITHUB PROFILE →</a></div>`;
+}
 
-        window.addEventListener('beforeunload', () => {
-            clearInterval(scanInterval);
-        });
-    </script>
+// ── TELEGRAM ──
+function renderTelegram(d){
+  document.getElementById('scFound').textContent=d.found?'FOUND':'NOT FOUND';
+  document.getElementById('scFound').className='sc-val '+(d.found?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=d.found?d.name:'';
+  document.getElementById('scPlatform').textContent='TELEGRAM';
+  document.getElementById('scOperator').textContent=d.subscribers||d.members||'—';
+  document.getElementById('scOperatorSub').textContent='Підписники';
+  if(!d.found){resetPanels();return;}
+  document.getElementById('p1body').innerHTML=profileBox(d.avatar,d.name,d.username,d.description,'Telegram')+rows({'Verified':d.verified,'Scam':d.scam,'Channel':d.is_channel,'Online':d.online||'—'});
+  document.getElementById('p2body').innerHTML=rows({'Subscribers':d.subscribers?.toLocaleString(),'Members':d.members?.toLocaleString()});
+  document.getElementById('p6body').innerHTML=`<div class="d-row"><a class="ext-link" href="${d.url}" target="_blank">OPEN TELEGRAM →</a></div>`;
+}
+
+// ── PERSON SEARCH ──
+function renderPerson(d){
+  document.getElementById('scFound').textContent=d.results_count||'—';
+  document.getElementById('scFoundSub').textContent='Результатів Google';
+  document.getElementById('scPlatform').textContent='OSINT';
+  document.getElementById('p1body').innerHTML=d.results?d.results.map(r=>`<div class="d-row" style="flex-direction:column;gap:3px"><a class="ext-link" href="${r.link}" target="_blank">${(r.title||'').slice(0,50)}</a><span style="font-size:9px;color:var(--text3)">${(r.snippet||'').slice(0,80)}</span></div>`).join(''):'<div class="empty-state"><div class="msg">Нічого не знайдено</div></div>';
+  document.getElementById('p2body').innerHTML=d.social_results?d.social_results.map(r=>`<div class="d-row"><a class="ext-link" href="${r.link}" target="_blank">${r.platform||r.link}</a></div>`).join(''):'<div class="empty-state"><div class="msg">Соцмережі не знайдено</div></div>';
+}
+
+// ── BREACH CHECK ──
+function renderBreach(d){
+  const count=d.breaches_count||0;
+  document.getElementById('scFound').textContent=count>0?`${count} LEAKS`:'CLEAN';
+  document.getElementById('scFound').className='sc-val '+(count>0?'notfound':'found');
+  document.getElementById('scFoundSub').textContent=count>0?'Знайдено витоків':'Витоків не знайдено';
+  document.getElementById('p1body').innerHTML=count>0?
+    (d.breaches||[]).map(b=>`<div class="d-row"><span class="d-key">${b.Name||b.name||'—'}</span><span class="d-val warn">${b.BreachDate||b.date||'—'}</span></div>`).join('')
+    :'<div class="found-badge yes" style="margin:8px auto">✓ CLEAN — Витоків не знайдено</div>';
+  document.getElementById('p2body').innerHTML=rows({'Перевірено':d.query,'Статус':count>0?`${count} витоків`:'Чистий','Джерело':'HaveIBeenPwned'});
+}
+
+// ── USERNAME (Sherlock) ──
+function renderUsername(d){
+  const found=Object.keys(d.found||{});
+  const notFound=d.not_found||[];
+  document.getElementById('scFound').textContent=found.length;
+  document.getElementById('scFound').className='sc-val '+(found.length>0?'found':'notfound');
+  document.getElementById('scFoundSub').textContent=`з ${found.length+notFound.length} платформ`;
+  document.getElementById('scPlatform').textContent='SHERLOCK';
+  document.getElementById('p1body').innerHTML=found.length?
+    found.map(p=>`<div class="d-row"><span class="d-key">${p}</span><a class="ext-link" href="${d.found[p]}" target="_blank">FOUND →</a></div>`).join('')
+    :'<div class="empty-state"><div class="msg">Не знайдено на жодній платформі</div></div>';
+  document.getElementById('p2body').innerHTML=`<div class="platform-chips">${found.map(p=>`<div class="chip found" onclick="window.open('${d.found[p]}','_blank')">${p}</div>`).join('')}${notFound.map(p=>`<div class="chip notfound">${p}</div>`).join('')}</div>`;
+  document.getElementById('p6body').innerHTML=d.serp_hits?d.serp_hits.map(r=>`<div class="d-row" style="flex-direction:column;gap:2px"><a class="ext-link" href="${r.link}" target="_blank">${(r.title||r.link||'').slice(0,50)}</a></div>`).join(''):'<div class="empty-state"><div class="msg">Немає SERP результатів</div></div>';
+}
+
+// ── MAP ──
+function showMap(lat,lon,label){
+  document.getElementById('mapPlaceholder').style.display='none';
+  const mapEl=document.getElementById('map');
+  mapEl.style.display='block';
+  document.getElementById('mapBadge').textContent=`${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+  if(!mapInstance){
+    mapInstance=L.map('map',{zoomControl:true,attributionControl:false}).setView([lat,lon],11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(mapInstance);
+  } else {
+    mapInstance.setView([lat,lon],11);
+    if(mapMarker) mapMarker.remove();
+  }
+  const icon=L.divIcon({html:`<div style="width:12px;height:12px;background:#ff6b00;border:2px solid #ff9500;border-radius:50%;box-shadow:0 0 12px #ff6b00,0 0 24px rgba(255,107,0,0.5)"></div>`,iconSize:[12,12],className:''});
+  mapMarker=L.marker([lat,lon],{icon}).addTo(mapInstance);
+  mapMarker.bindPopup(`<b style="color:#ff6b00;font-family:monospace">${label}</b><br><span style="font-family:monospace;font-size:11px">${lat}, ${lon}</span>`).openPopup();
+  setTimeout(()=>mapInstance.invalidateSize(),100);
+}
+function hideMap(){
+  document.getElementById('mapPlaceholder').style.display='flex';
+  document.getElementById('map').style.display='none';
+  document.getElementById('mapBadge').textContent='NO FIX';
+}
+
+// ── PROXY ──
+function openProxy(){document.getElementById('proxyModal').classList.add('open')}
+function closeProxy(){document.getElementById('proxyModal').classList.remove('open')}
+async function saveProxy(){
+  const t=document.querySelector('input[name="proxyType"]:checked').value;
+  const custom=document.getElementById('customProxy').value.trim();
+  try{
+    const r=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:t,custom})});
+    const d=await r.json();
+    currentProxy=t;
+    const btn=document.getElementById('proxyBtn');
+    if(t==='tor'){btn.textContent='⚡ PROXY: TOR';btn.classList.add('tor-active')}
+    else if(t==='custom'){btn.textContent='⚡ PROXY: ON';btn.classList.add('active-proxy')}
+    else{btn.textContent='⚡ PROXY: OFF';btn.classList.remove('tor-active','active-proxy')}
+    document.getElementById('sbProxy').textContent=t==='tor'?'PROXY: TOR':t==='custom'?'PROXY: CUSTOM':'PROXY: OFF';
+    showToast('Проксі налаштовано: '+d.proxy,'success');
+  }catch(e){showToast('Помилка проксі','error')}
+  closeProxy();
+}
+
+// ── TOR CHECK ──
+async function checkTorStatus(){
+  showToast('Перевіряємо TOR...','info',2000);
+  try{
+    const r=await fetch('/api/proxy/tor_check');
+    const d=await r.json();
+    const btn=document.getElementById('torBtn');
+    if(d.tor_active){
+      btn.style.color='var(--green)';btn.style.borderColor='rgba(0,255,136,0.4)';
+      showToast(`✓ TOR активний — IP: ${d.ip}`,'success');
+    } else {
+      btn.style.color='var(--red)';
+      showToast('✗ TOR неактивний — запусти Tor Browser','error');
+    }
+  }catch(e){showToast('TOR недоступний на порту 9050','error')}
+}
+
+// ── SHERLOCK (external) ──
+function runSherlock(){showToast('Sherlock: введи username і натисни Start Scan в режимі USERNAME','info',5000)}
+
+// ── EXPORT ──
+function exportReport(){
+  if(!lastResult){showToast('Немає даних для експорту','error');return;}
+  const blob=new Blob([JSON.stringify(lastResult,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`probiv_report_${lastResult.query}_${Date.now()}.json`;
+  a.click();
+  showToast('Звіт збережено','success');
+}
+
+// ── CLEAR ──
+function clearAll(){
+  document.getElementById('searchInput').value='';
+  resetPanels();
+  document.getElementById('scStatus').textContent='IDLE';document.getElementById('scStatus').className='sc-val';
+  document.getElementById('scTarget').textContent='—';document.getElementById('scFound').textContent='—';
+  document.getElementById('scPlatform').textContent='—';document.getElementById('scOperator').textContent='—';
+  lastResult=null;showToast('Очищено','info',1000);
+}
+
+// INIT
+document.getElementById('searchInput').placeholder=PLACEHOLDERS.phone;
+</script>
 </body>
 </html>
