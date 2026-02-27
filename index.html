@@ -1,2279 +1,469 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>PROBIV BOT v4 — OSINT Intelligence Terminal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@200;300;400;600;700;900&family=JetBrains+Mono:wght@300;400;500;700&family=Michroma&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-/* ═══════════════════════════════════════════════════════════════
-   DESIGN: DARK AMBER INTELLIGENCE TERMINAL
-   Amber/gold primary, near-black bg, military intelligence feel
-═══════════════════════════════════════════════════════════════ */
-:root {
-  /* Backgrounds */
-  --bg0:      #080a0e;
-  --bg1:      #0a0d13;
-  --bg2:      #0d1018;
-  --bg3:      #10141d;
-  --bg4:      #131821;
-  --panel:    #0c1020;
-  --panel2:   #0f1428;
-  --glass:    rgba(10,14,22,0.92);
-
-  /* Amber palette — primary */
-  --a1:       #ffaa00;
-  --a2:       #ff8c00;
-  --a3:       #ffc940;
-  --a4:       rgba(255,170,0,0.12);
-  --a5:       rgba(255,170,0,0.05);
-
-  /* Cyan — secondary */
-  --c1:       #00e5ff;
-  --c2:       #00b8d9;
-  --c3:       rgba(0,229,255,0.12);
-
-  /* Green / Red / Yellow */
-  --ok:       #00ff88;
-  --ok2:      rgba(0,255,136,0.12);
-  --err:      #ff2255;
-  --err2:     rgba(255,34,85,0.12);
-  --warn:     #ffcc00;
-  --warn2:    rgba(255,204,0,0.12);
-  --info:     #aa88ff;
-
-  /* Borders */
-  --b1:       rgba(255,170,0,0.1);
-  --b2:       rgba(255,170,0,0.22);
-  --b3:       rgba(255,170,0,0.4);
-  --bc1:      rgba(0,229,255,0.1);
-  --bc2:      rgba(0,229,255,0.25);
-
-  /* Text */
-  --t1:       #e8dcc8;
-  --t2:       #9a8f78;
-  --t3:       #5a5040;
-  --t4:       #352e22;
-
-  /* Fonts */
-  --fn:       'Exo 2', sans-serif;
-  --fm:       'JetBrains Mono', monospace;
-  --fh:       'Michroma', sans-serif;
-
-  /* Glows */
-  --ga:       0 0 8px rgba(255,170,0,0.5), 0 0 24px rgba(255,170,0,0.2);
-  --gc:       0 0 8px rgba(0,229,255,0.4), 0 0 20px rgba(0,229,255,0.15);
-  --gg:       0 0 8px rgba(0,255,136,0.5), 0 0 20px rgba(0,255,136,0.15);
-  --gr:       0 0 8px rgba(255,34,85,0.5), 0 0 20px rgba(255,34,85,0.15);
-}
-
-*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg0);color:var(--t1);font-family:var(--fn)}
-
-/* ── CURSOR ── */
-*{cursor:crosshair}
-button,a,select,input,label,[onclick]{cursor:pointer!important}
-input[type=text],input[type=search],textarea{cursor:text!important}
-
-/* ── SCROLLBARS ── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:var(--bg1)}
-::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
-::-webkit-scrollbar-thumb:hover{background:var(--b3)}
-
-/* ── BACKGROUND ── */
-#bgLayer{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 90%, rgba(255,140,0,0.04) 0%, transparent 55%),
-    radial-gradient(ellipse 50% 40% at 85% 5%, rgba(0,200,255,0.04) 0%, transparent 50%),
-    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(255,100,0,0.02) 0%, transparent 60%);
-}
-#hexGrid{
-  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
-  opacity:0.07;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V18L28 2l28 16v32L28 66zM28 2v64M0 18l28 16M56 18L28 34M0 50l28-16M56 50L28 34' stroke='%23ffaa00' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
-  background-size:56px 100px;
-}
-#scanLine{
-  position:fixed;top:0;left:0;right:0;height:1px;z-index:1000;pointer-events:none;
-  background:linear-gradient(90deg, transparent 0%, transparent 10%, var(--a1) 30%, var(--c1) 50%, var(--a1) 70%, transparent 90%, transparent 100%);
-  box-shadow:0 0 20px rgba(255,170,0,0.6);
-  animation:scanAnim 8s linear infinite;
-  opacity:0;
-}
-@keyframes scanAnim{
-  0%{top:-2px;opacity:0}2%{opacity:1}98%{opacity:0.4}100%{top:100vh;opacity:0}
-}
-#noiseLayer{
-  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.018;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-}
-
-/* ── APP SHELL ── */
-#app{
-  position:relative;z-index:10;
-  display:grid;
-  grid-template-rows:50px 1fr;
-  grid-template-columns:220px 1fr;
-  grid-template-areas:
-    "topbar topbar"
-    "sidebar main";
-  height:100vh;overflow:hidden;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TOPBAR
-═══════════════════════════════════════════════════════════════ */
-.topbar{
-  grid-area:topbar;
-  display:flex;align-items:center;
-  background:rgba(8,10,14,0.98);
-  border-bottom:1px solid var(--b2);
-  position:relative;z-index:200;
-  padding:0;
-  box-shadow:0 2px 30px rgba(0,0,0,0.8);
-}
-.topbar::after{
-  content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;
-  background:linear-gradient(90deg, transparent 0%, var(--a1) 20%, var(--c1) 50%, var(--a1) 80%, transparent 100%);
-  opacity:0.6;
-}
-
-.tb-logo{
-  width:220px;flex-shrink:0;
-  display:flex;align-items:center;gap:10px;padding:0 16px;
-  border-right:1px solid var(--b1);height:100%;
-}
-.logo-hex{
-  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
-  position:relative;flex-shrink:0;
-}
-.logo-hex::before{
-  content:'';position:absolute;inset:0;
-  clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
-  background:linear-gradient(135deg, rgba(255,170,0,0.2), rgba(255,100,0,0.1));
-  border:1px solid var(--a1);
-  animation:hexPulse 3s ease-in-out infinite;
-}
-@keyframes hexPulse{
-  0%,100%{box-shadow:none;opacity:1}
-  50%{box-shadow:var(--ga);opacity:0.8}
-}
-.logo-letter{
-  position:relative;font-family:var(--fh);font-size:15px;font-weight:400;
-  color:var(--a1);text-shadow:var(--ga);z-index:1;
-}
-.logo-text{
-  display:flex;flex-direction:column;gap:1px;
-}
-.logo-name{
-  font-family:var(--fh);font-size:13px;letter-spacing:3px;
-  color:var(--a1);text-shadow:var(--ga);line-height:1;
-}
-.logo-ver{
-  font-family:var(--fm);font-size:8px;letter-spacing:4px;color:var(--t3);
-}
-
-.tb-nav{display:flex;flex:1;height:100%}
-.tb-tab{
-  display:flex;align-items:center;gap:7px;
-  padding:0 18px;height:100%;border:none;background:transparent;
-  font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--t2);
-  border-bottom:2px solid transparent;cursor:pointer;transition:all 0.2s;
-  text-transform:uppercase;white-space:nowrap;
-}
-.tb-tab:hover{color:var(--a1);background:var(--a5)}
-.tb-tab.active{color:var(--a1);border-bottom-color:var(--a1);background:var(--a5);text-shadow:var(--ga)}
-.tb-tab .tab-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.5}
-.tb-tab.active .tab-dot{opacity:1;box-shadow:0 0 6px currentColor}
-
-.tb-right{
-  display:flex;align-items:center;gap:6px;padding:0 12px;margin-left:auto;
-  border-left:1px solid var(--b1);height:100%;
-}
-.tb-stat{
-  display:flex;flex-direction:column;gap:1px;padding:0 10px;border-right:1px solid var(--b1);
-}
-.tb-stat:last-of-type{border-right:none}
-.ts-label{font-family:var(--fm);font-size:7px;letter-spacing:2px;color:var(--t3);text-transform:uppercase}
-.ts-val{font-family:var(--fm);font-size:11px;color:var(--a1)}
-.ts-val.ok{color:var(--ok)}
-.ts-val.err{color:var(--err)}
-
-.tb-btn{
-  padding:5px 11px;border:1px solid var(--b2);background:var(--a5);
-  color:var(--t2);font-family:var(--fm);font-size:9px;letter-spacing:1.5px;
-  border-radius:2px;transition:all 0.2s;text-transform:uppercase;
-  display:flex;align-items:center;gap:5px;white-space:nowrap;
-}
-.tb-btn:hover{border-color:var(--a1);color:var(--a1);background:var(--a4);box-shadow:var(--ga)}
-.tb-btn.cyan{border-color:var(--bc2);color:var(--c1)}
-.tb-btn.cyan:hover{border-color:var(--c1);background:var(--c3);box-shadow:var(--gc)}
-.tb-btn.green{border-color:rgba(0,255,136,0.3);color:var(--ok)}
-.tb-btn.green:hover{border-color:var(--ok);background:var(--ok2);box-shadow:var(--gg)}
-.tb-btn.red{border-color:rgba(255,34,85,0.3);color:var(--err)}
-
-.tb-clock{
-  font-family:var(--fm);font-size:10px;color:var(--t3);
-  display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:80px;
-}
-.clock-time{color:var(--a3);font-size:12px}
-
-/* ═══════════════════════════════════════════════════════════════
-   SIDEBAR
-═══════════════════════════════════════════════════════════════ */
-.sidebar{
-  grid-area:sidebar;
-  background:rgba(8,10,14,0.98);
-  border-right:1px solid var(--b1);
-  display:flex;flex-direction:column;
-  overflow:hidden;position:relative;z-index:100;
-}
-.sidebar::after{
-  content:'';position:absolute;top:0;right:-1px;bottom:0;width:1px;
-  background:linear-gradient(to bottom, transparent, var(--a1), transparent);
-  opacity:0.3;
-}
-
-.sb-search{
-  padding:10px;border-bottom:1px solid var(--b1);flex-shrink:0;
-}
-.sb-search-inner{
-  display:flex;align-items:center;gap:8px;
-  background:rgba(255,170,0,0.05);border:1px solid var(--b2);border-radius:3px;
-  padding:6px 10px;
-}
-.sb-search-inner input{
-  background:none;border:none;outline:none;flex:1;
-  font-family:var(--fm);font-size:10px;color:var(--t1);
-  letter-spacing:1px;
-}
-.sb-search-inner input::placeholder{color:var(--t3);font-size:9px;letter-spacing:2px}
-.sb-search-icon{color:var(--a2);font-size:11px;flex-shrink:0}
-
-.sb-scroll{flex:1;overflow-y:auto;padding-bottom:60px}
-.sb-scroll::-webkit-scrollbar{width:2px}
-.sb-scroll::-webkit-scrollbar-thumb{background:var(--b2)}
-
-.sb-cat{
-  padding:14px 12px 6px;
-  font-family:var(--fm);font-size:8px;letter-spacing:3px;color:var(--t3);
-  text-transform:uppercase;display:flex;align-items:center;gap:8px;
-}
-.sb-cat::before{content:'//';color:var(--a3);opacity:0.5}
-.sb-cat-line{flex:1;height:1px;background:linear-gradient(to right, var(--b2), transparent)}
-
-.sb-item{
-  display:flex;align-items:center;gap:9px;
-  padding:8px 12px;cursor:pointer;transition:all 0.15s;
-  border-left:2px solid transparent;
-  position:relative;user-select:none;
-}
-.sb-item:hover{
-  background:rgba(255,170,0,0.04);
-  border-left-color:rgba(255,170,0,0.3);
-  color:var(--a1);
-}
-.sb-item.active{
-  background:rgba(255,170,0,0.07);
-  border-left-color:var(--a1);
-  color:var(--a1);
-}
-.sb-item.active::after{
-  content:'';position:absolute;right:0;top:20%;bottom:20%;width:2px;
-  background:var(--a1);box-shadow:var(--ga);border-radius:2px;
-}
-.sb-item.active .si-icon{text-shadow:0 0 8px currentColor}
-
-.si-icon{width:20px;text-align:center;font-size:13px;flex-shrink:0;color:var(--t2);transition:color 0.15s}
-.sb-item:hover .si-icon,.sb-item.active .si-icon{color:inherit}
-.si-label{font-size:11px;font-weight:600;letter-spacing:0.3px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2);transition:color 0.15s}
-.sb-item:hover .si-label,.sb-item.active .si-label{color:inherit}
-.si-badge{
-  font-family:var(--fm);font-size:7px;letter-spacing:1px;
-  padding:1px 5px;border-radius:2px;flex-shrink:0;text-transform:uppercase;
-}
-.si-badge.api{background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.2);color:var(--c1)}
-.si-badge.new{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);color:var(--ok)}
-.si-badge.cis{background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.2);color:var(--a3)}
-.si-badge.dork{background:rgba(170,136,255,0.1);border:1px solid rgba(170,136,255,0.2);color:var(--info)}
-
-.sb-item .si-pulse{
-  width:5px;height:5px;border-radius:50%;background:var(--ok);
-  box-shadow:0 0 4px var(--ok);flex-shrink:0;display:none;
-}
-.sb-item.active .si-pulse,.sb-item:hover .si-pulse{display:block}
-
-.sb-tools{
-  position:absolute;bottom:0;left:0;right:0;
-  padding:8px;border-top:1px solid var(--b1);
-  background:rgba(8,10,14,0.99);
-  display:flex;flex-direction:column;gap:4px;
-}
-.sb-tool-row{
-  display:flex;gap:4px;
-}
-.sb-tool-btn{
-  flex:1;padding:5px 6px;border:1px solid var(--b1);background:transparent;
-  color:var(--t2);font-family:var(--fm);font-size:8px;letter-spacing:1px;
-  border-radius:2px;transition:all 0.2s;text-align:center;
-}
-.sb-tool-btn:hover{border-color:var(--a1);color:var(--a1);background:var(--a5)}
-.sb-tool-btn.active{border-color:var(--ok);color:var(--ok);background:var(--ok2)}
-.sb-tool-btn.inactive{border-color:var(--err2);color:var(--err)}
-
-/* ═══════════════════════════════════════════════════════════════
-   MAIN AREA
-═══════════════════════════════════════════════════════════════ */
-.main{
-  grid-area:main;
-  display:flex;flex-direction:column;
-  overflow:hidden;position:relative;
-  background:var(--bg1);
-}
-
-/* ── SEARCH ZONE ── */
-.search-zone{
-  background:rgba(8,10,14,0.95);
-  border-bottom:1px solid var(--b1);
-  padding:10px 14px 8px;
-  flex-shrink:0;position:relative;z-index:50;
-}
-
-.search-top{
-  display:flex;align-items:center;gap:8px;
-}
-
-.mode-badge{
-  display:flex;align-items:center;gap:6px;
-  padding:0 12px;height:38px;
-  background:var(--a5);border:1px solid var(--b2);border-radius:3px;
-  flex-shrink:0;
-}
-.mode-label{font-family:var(--fm);font-size:7px;letter-spacing:2px;color:var(--t3);text-transform:uppercase}
-.mode-select{
-  background:transparent;border:none;outline:none;
-  font-family:var(--fm);font-size:10px;color:var(--a1);letter-spacing:1px;
-  cursor:pointer;max-width:130px;
-}
-.mode-select option{background:#0a0d13;color:var(--t1)}
-
-.search-box{
-  flex:1;position:relative;display:flex;align-items:center;
-}
-.search-cursor{
-  position:absolute;left:12px;width:14px;height:14px;
-  border:1.5px solid var(--a1);border-radius:50%;
-  display:flex;align-items:center;justify-content:center;pointer-events:none;
-}
-.search-cursor::before{
-  content:'';position:absolute;right:-6px;bottom:-6px;
-  width:7px;height:1.5px;background:var(--a1);transform:rotate(45deg);transform-origin:left;
-}
-.search-input{
-  width:100%;height:38px;
-  background:rgba(255,170,0,0.03);border:1px solid var(--b2);border-radius:3px;
-  padding:0 12px 0 36px;
-  color:var(--t1);font-family:var(--fm);font-size:13px;letter-spacing:1px;
-  outline:none;transition:all 0.2s;
-}
-.search-input::placeholder{color:var(--t3);font-size:10px;letter-spacing:2px}
-.search-input:focus{
-  border-color:var(--a1);background:rgba(255,170,0,0.05);
-  box-shadow:0 0 0 1px rgba(255,170,0,0.15), var(--ga);
-}
-
-.scan-btn{
-  height:38px;padding:0 22px;
-  background:linear-gradient(135deg, rgba(255,170,0,0.18), rgba(255,100,0,0.1));
-  border:1px solid var(--b3);border-radius:3px;
-  color:var(--a1);font-family:var(--fh);font-size:11px;letter-spacing:3px;
-  transition:all 0.2s;position:relative;overflow:hidden;white-space:nowrap;
-}
-.scan-btn::before{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg, transparent, rgba(255,170,0,0.12), transparent);
-  transform:translateX(-100%);transition:transform 0.4s;
-}
-.scan-btn:hover{
-  background:linear-gradient(135deg, rgba(255,170,0,0.25), rgba(255,100,0,0.15));
-  box-shadow:var(--ga);border-color:var(--a1);
-}
-.scan-btn:hover::before{transform:translateX(100%)}
-.scan-btn:active{transform:scale(0.98)}
-.scan-btn.running{
-  background:rgba(255,170,0,0.05);
-  animation:scanPulse 1.2s ease-in-out infinite;
-}
-@keyframes scanPulse{0%,100%{box-shadow:var(--ga)}50%{box-shadow:0 0 20px rgba(255,170,0,0.7)}}
-
-/* progress */
-.prog-bar{
-  height:2px;background:var(--bg3);position:relative;overflow:hidden;margin-top:6px;
-}
-.prog-fill{
-  height:100%;width:0%;transition:width 0.3s ease;position:relative;
-  background:linear-gradient(90deg, var(--a2), var(--a1), var(--c1));
-}
-.prog-fill::after{
-  content:'';position:absolute;right:0;top:0;bottom:0;width:30px;
-  background:linear-gradient(to left, rgba(255,255,255,0.6), transparent);
-}
-
-/* ── TOOL SELECTOR (shown in username modes) ── */
-#toolBar{
-  display:none;
-  margin-top:8px;padding-top:8px;border-top:1px solid var(--b1);
-  align-items:center;gap:8px;flex-wrap:wrap;
-}
-.tool-label{
-  font-family:var(--fm);font-size:7px;letter-spacing:3px;color:var(--t3);
-  text-transform:uppercase;flex-shrink:0;
-}
-.tool-sep{width:1px;height:22px;background:var(--b1);flex-shrink:0}
-.preset-btn{
-  padding:3px 10px;border:1px solid var(--b1);background:transparent;
-  color:var(--t3);font-family:var(--fm);font-size:8px;letter-spacing:2px;
-  border-radius:2px;transition:all 0.15s;text-transform:uppercase;
-}
-.preset-btn:hover{border-color:var(--b2);color:var(--a3)}
-.preset-btn.sel{border-color:var(--a1);color:var(--a1);background:var(--a5);text-shadow:var(--ga)}
-.tool-toggle{
-  display:flex;align-items:center;gap:6px;
-  padding:3px 9px;border:1px solid var(--b1);border-radius:2px;
-  font-family:var(--fm);font-size:9px;color:var(--t2);transition:all 0.15s;
-}
-.tool-toggle:has(input:checked){border-color:var(--b2);color:var(--a3)}
-.tool-toggle input{accent-color:var(--a1);width:11px;height:11px;cursor:pointer}
-.tool-dot{
-  width:5px;height:5px;border-radius:50%;flex-shrink:0;
-  background:var(--t4);transition:background 0.2s;
-}
-.tool-dot.ok{background:var(--ok);box-shadow:0 0 4px var(--ok)}
-.tool-dot.err{background:var(--err);box-shadow:0 0 4px var(--err)}
-.tool-hint{
-  margin-left:auto;font-family:var(--fm);font-size:8px;color:var(--t3);
-  letter-spacing:1px;max-width:300px;text-align:right;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   MAIN CONTENT GRID
-═══════════════════════════════════════════════════════════════ */
-.content-area{
-  flex:1;overflow:hidden;
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  grid-template-rows:auto 1fr 1fr;
-  gap:8px;
-  padding:8px 10px;
-  padding-bottom:32px;
-}
-
-/* ── STAT STRIP ── */
-.stat-strip{
-  grid-column:1/-1;
-  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
-}
-.stat-card{
-  background:var(--panel);border:1px solid var(--b1);border-radius:4px;
-  padding:8px 12px;position:relative;overflow:hidden;
-  transition:border-color 0.2s;
-}
-.stat-card:hover{border-color:var(--b2)}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1.5px;
-  background:linear-gradient(90deg, var(--accent-c,var(--a1)), transparent);
-}
-.stat-card.c{--accent-c:var(--c1)}
-.stat-card.g{--accent-c:var(--ok)}
-.stat-card.r{--accent-c:var(--err)}
-.stat-card.w{--accent-c:var(--warn)}
-.stat-card.p{--accent-c:var(--info)}
-
-.sc-lbl{font-family:var(--fm);font-size:7px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:5px}
-.sc-ico{position:absolute;right:8px;top:8px;font-size:18px;opacity:0.1}
-.sc-val{font-family:var(--fh);font-size:16px;color:var(--t1);line-height:1}
-.sc-val.ok{color:var(--ok);text-shadow:var(--gg)}
-.sc-val.err{color:var(--err);text-shadow:var(--gr)}
-.sc-val.loading{color:var(--a3);animation:valBlink 1s ease-in-out infinite}
-@keyframes valBlink{0%,100%{opacity:0.5}50%{opacity:1}}
-.sc-sub{font-family:var(--fm);font-size:8px;color:var(--t3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* ── PANEL CARD ── */
-.panel{
-  background:var(--panel);border:1px solid var(--b1);border-radius:4px;
-  display:flex;flex-direction:column;overflow:hidden;
-  min-height:0;transition:border-color 0.2s;
-}
-.panel:hover{border-color:var(--b2)}
-.panel.span2{grid-column:span 2}
-.panel.span3{grid-column:span 3}
-.panel.tall{grid-row:span 2}
-
-.ph{
-  display:flex;align-items:center;gap:7px;
-  padding:7px 11px;border-bottom:1px solid var(--b1);
-  background:rgba(0,0,0,0.2);flex-shrink:0;
-}
-.ph-dot{
-  width:5px;height:5px;border-radius:50%;flex-shrink:0;
-}
-.ph-dot.a{background:var(--a1);box-shadow:0 0 5px var(--a1)}
-.ph-dot.c{background:var(--c1);box-shadow:0 0 5px var(--c1)}
-.ph-dot.g{background:var(--ok);box-shadow:0 0 5px var(--ok)}
-.ph-dot.r{background:var(--err);box-shadow:0 0 5px var(--err)}
-.ph-dot.w{background:var(--warn);box-shadow:0 0 5px var(--warn)}
-.ph-dot.p{background:var(--info);box-shadow:0 0 5px var(--info)}
-.ph-title{
-  font-family:var(--fm);font-size:9px;letter-spacing:2px;
-  color:var(--t2);text-transform:uppercase;flex:1;
-}
-.ph-badge{
-  font-family:var(--fm);font-size:7px;letter-spacing:1px;
-  padding:2px 6px;border-radius:2px;
-  background:var(--a5);border:1px solid var(--b1);color:var(--t3);
-}
-.ph-badge.live{background:var(--ok2);border-color:rgba(0,255,136,0.3);color:var(--ok)}
-.ph-badge.err{background:var(--err2);border-color:rgba(255,34,85,0.2);color:var(--err)}
-.ph-action{
-  padding:2px 8px;border:1px solid var(--b1);background:transparent;
-  color:var(--t3);font-family:var(--fm);font-size:8px;border-radius:2px;
-  transition:all 0.15s;
-}
-.ph-action:hover{border-color:var(--a1);color:var(--a1)}
-
-.pb{
-  flex:1;overflow-y:auto;padding:10px;min-height:0;
-}
-.pb::-webkit-scrollbar{width:2px}
-
-/* ── DATA ROWS ── */
-.dr{
-  display:flex;justify-content:space-between;align-items:baseline;
-  padding:4px 0;border-bottom:1px solid rgba(255,170,0,0.04);gap:8px;
-}
-.dr:last-child{border-bottom:none}
-.dk{
-  font-family:var(--fm);font-size:8px;color:var(--t3);
-  letter-spacing:1px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;
-}
-.dv{
-  font-family:var(--fm);font-size:10px;color:var(--t1);
-  text-align:right;word-break:break-all;
-}
-.dv.ok{color:var(--ok)}
-.dv.err{color:var(--err)}
-.dv.warn{color:var(--warn)}
-.dv.hi{color:var(--a1)}
-.dv.cyan{color:var(--c1)}
-.dv.info{color:var(--info)}
-
-/* ── PROFILE BOX ── */
-.profile-box{
-  display:flex;gap:10px;align-items:flex-start;
-  padding:8px;background:rgba(255,170,0,0.03);
-  border:1px solid var(--b1);border-radius:3px;margin-bottom:8px;
-}
-.pava{
-  width:46px;height:46px;border-radius:4px;
-  border:1px solid var(--b2);object-fit:cover;flex-shrink:0;
-}
-.pava-ph{
-  width:46px;height:46px;border-radius:4px;
-  border:1px solid var(--b2);background:var(--a5);
-  display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;
-}
-.pinfo{flex:1;min-width:0}
-.pname{
-  font-family:var(--fn);font-size:13px;font-weight:700;
-  color:var(--t1);margin-bottom:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.puser{font-family:var(--fm);font-size:9px;color:var(--a3)}
-.pbio{
-  font-size:9px;color:var(--t2);margin-top:3px;
-  line-height:1.4;word-break:break-word;display:-webkit-box;
-  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-}
-.ptag{
-  display:inline-flex;align-items:center;
-  padding:1px 5px;border-radius:2px;font-family:var(--fm);font-size:7px;letter-spacing:1px;
-  background:var(--a5);border:1px solid var(--b1);color:var(--a3);margin-left:5px;
-}
-
-/* ── PLATFORM CHIPS ── */
-.chips{display:flex;flex-wrap:wrap;gap:4px;padding:2px 0}
-.chip{
-  padding:3px 8px;border-radius:2px;font-family:var(--fm);font-size:8px;letter-spacing:1px;
-  transition:all 0.15s;cursor:pointer;text-transform:uppercase;
-}
-.chip.found{
-  background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);color:var(--ok);
-}
-.chip.found:hover{background:rgba(0,255,136,0.15);box-shadow:var(--gg)}
-.chip.miss{
-  background:rgba(255,34,85,0.04);border:1px solid rgba(255,34,85,0.1);color:var(--t3);
-}
-
-/* ── LINK STYLE ── */
-.xlink{
-  color:var(--a1);text-decoration:none;font-family:var(--fm);font-size:9px;
-  letter-spacing:1px;transition:text-shadow 0.15s;
-}
-.xlink:hover{text-decoration:underline;text-shadow:var(--ga)}
-
-/* ── EMPTY & LOADER ── */
-.empty{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;gap:8px;opacity:0.4;
-}
-.empty-ico{font-size:28px;opacity:0.4}
-.empty-txt{font-family:var(--fm);font-size:8px;letter-spacing:3px;color:var(--t3);text-transform:uppercase}
-
-.loader{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  height:100%;gap:14px;
-}
-.loader-ring{
-  width:36px;height:36px;border-radius:50%;
-  border:2px solid var(--bg3);
-  border-top-color:var(--a1);
-  border-right-color:var(--a3);
-  animation:spin 0.8s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loader-bars{display:flex;gap:3px;align-items:flex-end;height:20px}
-.loader-bar{
-  width:3px;border-radius:2px;background:var(--a1);
-  animation:barUp 0.7s ease-in-out infinite;
-}
-.loader-bar:nth-child(2){animation-delay:0.1s;background:var(--a3)}
-.loader-bar:nth-child(3){animation-delay:0.2s;background:var(--c1)}
-.loader-bar:nth-child(4){animation-delay:0.3s;background:var(--a3)}
-.loader-bar:nth-child(5){animation-delay:0.4s;background:var(--a1)}
-@keyframes barUp{0%,100%{height:3px;opacity:0.3}50%{height:20px;opacity:1}}
-.loader-txt{font-family:var(--fm);font-size:8px;letter-spacing:4px;color:var(--t3);animation:blink 1.5s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:0.3}50%{opacity:1}}
-
-/* ── MAP ── */
-#map{width:100%;height:100%;min-height:100%}
-.leaflet-tile-pane{filter:invert(1) hue-rotate(195deg) brightness(0.55) saturate(2) contrast(1.1)}
-.leaflet-container{background:#080a0e}
-.leaflet-control-zoom a{background:var(--panel)!important;color:var(--a1)!important;border-color:var(--b2)!important}
-.leaflet-control-attribution{display:none!important}
-
-/* ── STATUS BAR ── */
-.statusbar{
-  position:fixed;bottom:0;left:220px;right:0;height:28px;z-index:200;
-  display:flex;align-items:center;gap:0;
-  background:rgba(8,10,14,0.99);
-  border-top:1px solid var(--b1);
-  font-family:var(--fm);font-size:8px;
-}
-.statusbar::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg, transparent, var(--a2), var(--c1), var(--a2), transparent);
-  opacity:0.4;
-}
-.sb-seg{
-  display:flex;align-items:center;gap:5px;
-  padding:0 12px;height:100%;border-right:1px solid var(--b1);
-  color:var(--t3);white-space:nowrap;
-}
-.sb-seg:last-child{border-right:none;margin-left:auto}
-.sb-seg .dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
-.sb-seg .dot.ok{background:var(--ok);box-shadow:0 0 4px var(--ok)}
-.sb-seg .dot.warn{background:var(--warn)}
-.sb-seg .dot.err{background:var(--err)}
-.sb-seg strong{color:var(--a3)}
-
-/* ── MODAL ── */
-.overlay{
-  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.75);
-  backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
-}
-.overlay.open{display:flex}
-.modal{
-  background:var(--panel);border:1px solid var(--b2);border-radius:6px;
-  width:400px;position:relative;overflow:hidden;
-  box-shadow:0 30px 80px rgba(0,0,0,0.9), 0 0 60px rgba(255,170,0,0.08);
-}
-.modal::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg, var(--a2), var(--a1), var(--c1));
-}
-.modal-head{
-  padding:18px 20px 14px;border-bottom:1px solid var(--b1);
-  font-family:var(--fh);font-size:12px;letter-spacing:3px;color:var(--a1);
-}
-.modal-x{
-  position:absolute;top:14px;right:16px;color:var(--t3);
-  font-size:14px;transition:color 0.15s;background:none;border:none;
-}
-.modal-x:hover{color:var(--err)}
-.modal-body{padding:16px 20px 20px}
-.radio-group{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
-.radio-opt{
-  display:flex;align-items:center;gap:10px;padding:9px 11px;
-  border:1px solid var(--b1);border-radius:3px;cursor:pointer;transition:all 0.15s;
-}
-.radio-opt:hover{border-color:var(--b2)}
-.radio-opt input{accent-color:var(--a1);cursor:pointer}
-.radio-opt label{font-family:var(--fm);font-size:10px;color:var(--t2);cursor:pointer}
-.m-input{
-  width:100%;padding:8px 11px;
-  background:rgba(255,170,0,0.03);border:1px solid var(--b2);border-radius:3px;
-  color:var(--t1);font-family:var(--fm);font-size:10px;outline:none;
-  transition:border-color 0.2s;
-}
-.m-input:focus{border-color:var(--a1)}
-.m-btn{
-  width:100%;margin-top:14px;padding:10px;
-  background:linear-gradient(135deg, rgba(255,170,0,0.2), rgba(255,100,0,0.1));
-  border:1px solid var(--b3);border-radius:3px;
-  color:var(--a1);font-family:var(--fh);font-size:10px;letter-spacing:3px;
-  transition:all 0.2s;
-}
-.m-btn:hover{background:linear-gradient(135deg, rgba(255,170,0,0.3), rgba(255,100,0,0.2));box-shadow:var(--ga)}
-
-/* ── TOAST ── */
-#toasts{
-  position:fixed;top:58px;right:12px;z-index:900;
-  display:flex;flex-direction:column;gap:5px;
-}
-.toast{
-  padding:8px 14px;background:rgba(10,13,20,0.97);
-  border:1px solid var(--b2);border-radius:3px;
-  font-family:var(--fm);font-size:9px;letter-spacing:1px;
-  display:flex;align-items:center;gap:8px;min-width:220px;max-width:340px;
-  animation:toastIn 0.2s ease-out;
-  box-shadow:0 4px 20px rgba(0,0,0,0.6);
-}
-.toast.ok{border-color:rgba(0,255,136,0.4);color:var(--ok)}
-.toast.err{border-color:rgba(255,34,85,0.4);color:var(--err)}
-.toast.warn{border-color:rgba(255,204,0,0.3);color:var(--warn)}
-.toast.info{border-color:var(--b2);color:var(--a3)}
-@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
-
-/* ── TAGS ── */
-.tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}
-.tag{
-  padding:1px 6px;border-radius:2px;font-family:var(--fm);font-size:7px;letter-spacing:1px;
-  background:var(--a5);border:1px solid var(--b1);color:var(--a3);
-}
-
-/* ── FOUND BADGE ── */
-.found-b{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:5px 11px;border-radius:3px;font-family:var(--fm);font-size:9px;
-  letter-spacing:2px;text-transform:uppercase;
-}
-.found-b.yes{background:var(--ok2);border:1px solid rgba(0,255,136,0.3);color:var(--ok)}
-.found-b.no{background:var(--err2);border:1px solid rgba(255,34,85,0.2);color:var(--err)}
-
-/* ── RESULT CARD ── */
-.result-item{
-  padding:6px 8px;border:1px solid var(--b1);border-radius:3px;
-  margin-bottom:5px;background:rgba(255,170,0,0.02);
-  transition:border-color 0.15s;
-}
-.result-item:hover{border-color:var(--b2)}
-.result-item:last-child{margin-bottom:0}
-.ri-title{
-  font-family:var(--fn);font-size:11px;font-weight:600;color:var(--a3);
-  margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.ri-url{
-  font-family:var(--fm);font-size:8px;color:var(--t3);
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.ri-snip{font-size:9px;color:var(--t2);margin-top:3px;line-height:1.4}
-
-/* ── TERMINAL BLOCK ── */
-.terminal{
-  background:rgba(0,0,0,0.3);border:1px solid var(--b1);border-radius:3px;
-  padding:8px 10px;font-family:var(--fm);font-size:9px;color:var(--t2);
-  line-height:1.6;overflow-y:auto;max-height:120px;
-}
-.terminal .tl-ok{color:var(--ok)}
-.terminal .tl-err{color:var(--err)}
-.terminal .tl-info{color:var(--a3)}
-.terminal .tl-dim{color:var(--t3)}
-
-/* ── ANIMATIONS ── */
-@keyframes fadeSlideIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-.pb > *{animation:fadeSlideIn 0.25s ease-out}
-
-/* ── RESPONSIVE ── */
-@media(max-height:700px){
-  .content-area{grid-template-rows:auto 1fr;padding-bottom:30px}
-  .stat-strip{grid-template-columns:repeat(3,1fr)}
-}
-
-/* ── HEX ACCENT ELEMENTS ── */
-.hex-num{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:28px;height:28px;flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:var(--a5);border:none;
-  font-family:var(--fh);font-size:10px;color:var(--a1);
-}
-
-/* ── SECTION DIVIDER ── */
-.section-div{
-  display:flex;align-items:center;gap:8px;margin:8px 0;
-}
-.section-div span{font-family:var(--fm);font-size:7px;letter-spacing:3px;color:var(--t3);text-transform:uppercase}
-.section-div::before,.section-div::after{content:'';flex:1;height:1px;background:var(--b1)}
-
-/* ── STAT NUMBER LARGE ── */
-.big-stat{
-  font-family:var(--fh);font-size:28px;line-height:1;
-  color:var(--a1);text-shadow:var(--ga);
-}
-
-/* ── DORK RESULT ── */
-.dork-r{
-  padding:5px 8px;border-left:2px solid var(--a2);
-  background:rgba(255,170,0,0.02);margin-bottom:4px;
-}
-.dork-r:last-child{margin-bottom:0}
-
-/* ── IP MAP COORD ── */
-.coord-box{
-  display:flex;gap:10px;flex-wrap:wrap;padding:6px 0;
-}
-.coord{
-  font-family:var(--fm);font-size:10px;
-  display:flex;align-items:center;gap:4px;
-}
-.coord-k{color:var(--t3);font-size:8px}
-.coord-v{color:var(--a1)}
-
-/* ── SCROLLABLE TABLE ── */
-.data-table{width:100%;border-collapse:collapse;font-family:var(--fm);font-size:9px}
-.data-table th{
-  text-align:left;padding:4px 8px;
-  color:var(--t3);letter-spacing:1px;text-transform:uppercase;
-  border-bottom:1px solid var(--b2);font-weight:400;
-}
-.data-table td{
-  padding:4px 8px;border-bottom:1px solid rgba(255,170,0,0.04);
-  color:var(--t1);vertical-align:top;
-}
-.data-table tr:hover td{background:rgba(255,170,0,0.02)}
-.data-table .ok{color:var(--ok)}
-.data-table .err{color:var(--err)}
-.data-table a{color:var(--a1);text-decoration:none}
-.data-table a:hover{text-decoration:underline}
-
-/* ── CATEGORY LINE ── */
-.cat-line{
-  display:flex;align-items:center;gap:6px;
-  padding:10px 0 4px;
-}
-.cat-line::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--b2),transparent)}
-.cat-ico{font-size:10px}
-.cat-name{font-family:var(--fm);font-size:8px;letter-spacing:2px;color:var(--t3);text-transform:uppercase}
-
-/* ── GLOWING BORDER ANIMATION ── */
-@keyframes borderGlow{
-  0%,100%{border-color:var(--b1)}
-  50%{border-color:var(--b3)}
-}
-.panel.scanning{animation:borderGlow 1.5s ease-in-out infinite}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSINT HARDCORE ACADEMY | ELITE INTELLIGENCE TRAINING</title>
+    <!-- 
+        PROJECT: OSINT HARDCORE ACADEMY FRONTEND
+        VERSION: 2.0.4 (STABLE)
+        DESCRIPTION: ADVANCED TERMINAL INTERFACE FOR OSINT TRAINING
+        AUTHOR: GEMINI CORE
+        LICENSE: MIT / EDUCATIONAL USE ONLY
+    -->
+    <style>
+        /* --- CSS VARIABLES & THEMING --- */
+        :root {
+            --primary: #00ff41; /* Classic Matrix Green */
+            --primary-dim: #003b00;
+            --bg-dark: #050505;
+            --bg-lighter: #0a0a0a;
+            --danger: #ff3333;
+            --warning: #ffcc00;
+            --info: #00ccff;
+            --font-mono: 'Fira Code', 'Courier New', Courier, monospace;
+            --scanline-color: rgba(18, 16, 16, 0.1);
+        }
+
+        /* --- RESET & BASE STYLES --- */
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            font-family: var(--font-mono);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CRT EFFECT LAYERS --- */
+        .crt-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        .crt-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(var(--scanline-color) 50%, rgba(0, 0, 0, 0.2) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 5;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .crt-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.1; }
+            50% { opacity: 0.2; }
+            100% { opacity: 0.1; }
+        }
+
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 6;
+            background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 65, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100px; }
+        }
+
+        /* --- BACKGROUND MATRIX ANIMATION --- */
+        #matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        /* --- TERMINAL UI ELEMENTS --- */
+        #terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-dim) transparent;
+        }
+
+        #terminal-output::-webkit-scrollbar { width: 4px; }
+        #terminal-output::-webkit-scrollbar-thumb { background: var(--primary-dim); }
+
+        .input-area {
+            display: flex;
+            align-items: center;
+            border-top: 1px solid var(--primary-dim);
+            padding-top: 10px;
+            background: var(--bg-dark);
+            z-index: 10;
+        }
+
+        .prompt {
+            color: var(--primary);
+            font-weight: bold;
+            margin-right: 10px;
+            white-space: nowrap;
+        }
+
+        #command-input {
+            background: transparent;
+            border: none;
+            color: var(--primary);
+            font-family: var(--font-mono);
+            font-size: 16px;
+            width: 100%;
+            outline: none;
+            caret-color: var(--primary);
+        }
+
+        /* --- TEXT STYLING --- */
+        .green { color: var(--primary); }
+        .red { color: var(--danger); }
+        .blue { color: var(--info); }
+        .yellow { color: var(--warning); }
+        .bold { font-weight: bold; }
+        .dim { opacity: 0.6; }
+
+        .ascii-logo {
+            white-space: pre;
+            font-size: 10px;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .tool-card {
+            border: 1px solid var(--primary-dim);
+            padding: 10px;
+            margin: 10px 0;
+            background: rgba(0, 59, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .tool-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-dim);
+        }
+
+        .btn-join {
+            background: var(--primary);
+            color: black;
+            padding: 5px 15px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .btn-join:hover {
+            background: white;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        /* --- ANIMATIONS --- */
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid var(--primary);
+            animation: typing 2s steps(40, end), blink-caret .75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--primary); }
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .ascii-logo { font-size: 5px; }
+            .prompt { font-size: 12px; }
+            #command-input { font-size: 14px; }
+        }
+    </style>
 </head>
 <body>
-<div id="bgLayer"></div>
-<div id="hexGrid"></div>
-<div id="scanLine"></div>
-<div id="noiseLayer"></div>
-<div id="toasts"></div>
 
-<!-- PROXY MODAL -->
-<div class="overlay" id="proxyOverlay">
-  <div class="modal">
-    <div class="modal-head">PROXY CONFIGURATION</div>
-    <button class="modal-x" onclick="closeProxy()">✕</button>
-    <div class="modal-body">
-      <div class="radio-group">
-        <div class="radio-opt"><input type="radio" name="pt" id="pNone" value="none" checked><label for="pNone">🔓 Direct connection — no proxy</label></div>
-        <div class="radio-opt"><input type="radio" name="pt" id="pTor" value="tor"><label for="pTor">🧅 TOR SOCKS5 — 127.0.0.1:9050</label></div>
-        <div class="radio-opt"><input type="radio" name="pt" id="pCustom" value="custom"><label for="pCustom">⚙ Custom SOCKS5/HTTP proxy</label></div>
-      </div>
-      <input class="m-input" id="customProxyInput" placeholder="socks5://user:pass@host:port  or  http://host:port">
-      <button class="m-btn" onclick="applyProxy()">APPLY PROXY SETTINGS</button>
-    </div>
-  </div>
-</div>
+    <canvas id="matrix-bg"></canvas>
+    <div class="scanline"></div>
 
-<!-- APP -->
-<div id="app">
+    <div class="crt-container">
+        <div id="terminal-output">
+            <!-- Initial ASCII LOGO -->
+            <div class="ascii-logo">
+ ██████╗ ███████╗██╗███╗   ██╗████████╗    ██╗  ██╗ █████╗ ██████╗ ██████╗  ██████╗ ██████╗ ██████╗ ███████╗
+██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝    ██║  ██║██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔═══██╗██╔══██╗██╔════╝
+██║   ██║███████╗██║██╔██╗ ██║   ██║       ███████║███████║██████╔╝██║  ██║██║     ██║   ██║██████╔╝█████╗  
+██║   ██║╚════██║██║██║╚██╗██║   ██║       ██╔══██║██╔══██║██╔══██╗██║  ██║██║     ██║   ██║██╔══██╗██╔══╝  
+╚██████╔╝███████║██║██║ ╚████║   ██║       ██║  ██║██║  ██║██║  ██║██████╔╝╚██████╗╚██████╔╝██║  ██║███████╗
+ ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝   ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                    [ OSINT ACADEMY v2.0.4 ]
+            </div>
+            
+            <div class="green bold">ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...</div>
+            <div class="dim">Загрузка протоколов безопасности... OK</div>
+            <div class="dim">Подключение к узлам TOR... OK</div>
+            <div class="dim">Анализ текущего IP: <span class="yellow" id="current-ip">DETECTING...</span></div>
+            <div class="green">ДОБРО ПОЖАЛОВАТЬ, КУРСАНТ.</div>
+            <div class="white">Введите <span class="yellow">'help'</span> для получения списка доступных модулей обучения.</div>
+            <br>
+        </div>
 
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="tb-logo">
-      <div class="logo-hex"><span class="logo-letter">P</span></div>
-      <div class="logo-text">
-        <div class="logo-name">PROBIV</div>
-        <div class="logo-ver">OSINT v4.0</div>
-      </div>
-    </div>
-    <nav class="tb-nav">
-      <button class="tb-tab active" onclick="switchTab(this,'dashboard')">
-        <span class="tab-dot"></span> DASHBOARD
-      </button>
-      <button class="tb-tab" onclick="switchTab(this,'social')">
-        <span class="tab-dot"></span> SOCIAL PARSERS
-      </button>
-      <button class="tb-tab" onclick="switchTab(this,'geo')">
-        <span class="tab-dot"></span> GEO-INTEL
-      </button>
-      <button class="tb-tab" onclick="switchTab(this,'dorks')">
-        <span class="tab-dot"></span> DORKS
-      </button>
-      <button class="tb-tab" onclick="switchTab(this,'reports')">
-        <span class="tab-dot"></span> REPORTS
-      </button>
-    </nav>
-    <div class="tb-right">
-      <div class="tb-stat">
-        <div class="ts-label">Status</div>
-        <div class="ts-val ok" id="sysStatus">ONLINE</div>
-      </div>
-      <div class="tb-stat">
-        <div class="ts-label">Scans</div>
-        <div class="ts-val" id="scanCount">0</div>
-      </div>
-      <div class="tb-stat">
-        <div class="ts-label">Proxy</div>
-        <div class="ts-val" id="proxyStatus">OFF</div>
-      </div>
-      <button class="tb-btn cyan" onclick="checkTor()" id="torBtn">🧅 TOR</button>
-      <button class="tb-btn" onclick="openProxy()" id="proxyBtn">⚡ PROXY</button>
-      <button class="tb-btn" onclick="exportJSON()">📄 EXPORT</button>
-      <button class="tb-btn" onclick="clearAll()">✕ CLEAR</button>
-      <div class="tb-clock">
-        <div class="clock-time" id="clockTime">00:00:00</div>
-        <div id="clockDate" style="font-size:8px;letter-spacing:1px">--.--.----</div>
-      </div>
-    </div>
-  </header>
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sb-search">
-      <div class="sb-search-inner">
-        <span class="sb-search-icon">⌕</span>
-        <input type="text" placeholder="FILTER MODULES..." oninput="filterSidebar(this.value)">
-      </div>
+        <div class="input-area">
+            <span class="prompt">GUEST@OSINT_ACADEMY:~$</span>
+            <input type="text" id="command-input" autofocus spellcheck="false" autocomplete="off">
+        </div>
     </div>
 
-    <div class="sb-scroll" id="sbScroll">
-
-      <!-- SEARCH -->
-      <div class="sb-cat"><span>Search</span><div class="sb-cat-line"></div></div>
-      <div class="sb-item active" onclick="setMode('phone',this)" data-mode="phone">
-        <span class="si-icon">📞</span><span class="si-label">Phone Lookup</span>
-        <span class="si-badge cis">UA/RU/KZ</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('email',this)" data-mode="email">
-        <span class="si-icon">✉</span><span class="si-label">Email OSINT</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('ip',this)" data-mode="ip">
-        <span class="si-icon">🌐</span><span class="si-label">IP Address Scan</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('domain',this)" data-mode="domain">
-        <span class="si-icon">🔗</span><span class="si-label">Domain / WHOIS</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('person',this)" data-mode="person">
-        <span class="si-icon">🔍</span><span class="si-label">Person Search</span>
-        <span class="si-badge new">NEW</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('breach',this)" data-mode="breach">
-        <span class="si-icon">💀</span><span class="si-label">Breach Check</span>
-        <span class="si-badge new">NEW</span><div class="si-pulse"></div>
-      </div>
-
-      <!-- USERNAME OSINT -->
-      <div class="sb-cat"><span>Username OSINT</span><div class="sb-cat-line"></div></div>
-      <div class="sb-item" onclick="setMode('username',this)" data-mode="username">
-        <span class="si-icon">👤</span><span class="si-label">Multi-Platform</span>
-        <span class="si-badge api">15+</span><div class="si-pulse"></div>
-      </div>
-
-      <!-- SOCIAL APIs -->
-      <div class="sb-cat"><span>Social APIs</span><div class="sb-cat-line"></div></div>
-      <div class="sb-item" onclick="setMode('twitter',this)" data-mode="twitter">
-        <span class="si-icon">𝕏</span><span class="si-label">Twitter / X</span>
-        <span class="si-badge api">API</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('vk',this)" data-mode="vk">
-        <span class="si-icon">💙</span><span class="si-label">VKontakte</span>
-        <span class="si-badge api">API</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('github',this)" data-mode="github">
-        <span class="si-icon">🐱</span><span class="si-label">GitHub</span>
-        <span class="si-badge api">API</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('telegram',this)" data-mode="telegram">
-        <span class="si-icon">✈</span><span class="si-label">Telegram</span>
-        <div class="si-pulse"></div>
-      </div>
-
-      <!-- PARSERS -->
-      <div class="sb-cat"><span>Parsers</span><div class="sb-cat-line"></div></div>
-      <div class="sb-item" onclick="setMode('tiktok',this)" data-mode="tiktok">
-        <span class="si-icon">🎵</span><span class="si-label">TikTok</span>
-        <span class="si-badge new">10 strat</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('instagram',this)" data-mode="instagram">
-        <span class="si-icon">📸</span><span class="si-label">Instagram</span>
-        <span class="si-badge new">12 strat</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('facebook',this)" data-mode="facebook">
-        <span class="si-icon">📘</span><span class="si-label">Facebook</span>
-        <span class="si-badge new">8 strat</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('ok',this)" data-mode="ok">
-        <span class="si-icon">🟠</span><span class="si-label">OK.ru</span>
-        <span class="si-badge cis">CIS</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('discord',this)" data-mode="discord">
-        <span class="si-icon">🎮</span><span class="si-label">Discord</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('snapchat',this)" data-mode="snapchat">
-        <span class="si-icon">👻</span><span class="si-label">Snapchat</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('youtube',this)" data-mode="youtube">
-        <span class="si-icon">▶</span><span class="si-label">YouTube</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('twitch',this)" data-mode="twitch">
-        <span class="si-icon">🟣</span><span class="si-label">Twitch</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('reddit',this)" data-mode="reddit">
-        <span class="si-icon">🤖</span><span class="si-label">Reddit</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('linkedin',this)" data-mode="linkedin">
-        <span class="si-icon">💼</span><span class="si-label">LinkedIn</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('pinterest',this)" data-mode="pinterest">
-        <span class="si-icon">📌</span><span class="si-label">Pinterest</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('steam',this)" data-mode="steam">
-        <span class="si-icon">🎲</span><span class="si-label">Steam</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('epicgames',this)" data-mode="epicgames">
-        <span class="si-icon">⚫</span><span class="si-label">Epic Games</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('skype',this)" data-mode="skype">
-        <span class="si-icon">☁</span><span class="si-label">Skype</span>
-        <div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('whatsapp',this)" data-mode="whatsapp">
-        <span class="si-icon">💬</span><span class="si-label">WhatsApp</span>
-        <div class="si-pulse"></div>
-      </div>
-
-      <!-- DORKS -->
-      <div class="sb-cat"><span>Dorks</span><div class="sb-cat-line"></div></div>
-      <div class="sb-item" onclick="setMode('googledork',this)" data-mode="googledork">
-        <span class="si-icon">🔎</span><span class="si-label">Google Dork</span>
-        <span class="si-badge dork">DORK</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('ddgdork',this)" data-mode="ddgdork">
-        <span class="si-icon">🦆</span><span class="si-label">DDG Dork</span>
-        <span class="si-badge dork">DORK</span><div class="si-pulse"></div>
-      </div>
-      <div class="sb-item" onclick="setMode('yandex',this)" data-mode="yandex">
-        <span class="si-icon">🅨</span><span class="si-label">Yandex Search</span>
-        <span class="si-badge cis">RU</span><div class="si-pulse"></div>
-      </div>
-
-    </div><!-- /sb-scroll -->
-
-    <!-- Tool buttons at bottom -->
-    <div class="sb-tools">
-      <div class="sb-tool-row">
-        <button class="sb-tool-btn" id="tBtn-sherlock" onclick="toggleTool('sherlock')">🔎 SHERLOCK</button>
-        <button class="sb-tool-btn" id="tBtn-maigret" onclick="toggleTool('maigret')">🧩 MAIGRET</button>
-      </div>
-      <div class="sb-tool-row">
-        <button class="sb-tool-btn" id="tBtn-snoop" onclick="toggleTool('snoop')">🕵 SNOOP</button>
-        <button class="sb-tool-btn" onclick="checkToolsStatus()">⟳ CHECK</button>
-      </div>
-    </div>
-
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main">
-
-    <!-- SEARCH ZONE -->
-    <div class="search-zone">
-      <div class="search-top">
-        <div class="mode-badge">
-          <span class="mode-label">MODE</span>
-          <select class="mode-select" id="modeSelect" onchange="setModeFromSelect()">
-            <option value="phone">PHONE LOOKUP</option>
-            <option value="email">EMAIL OSINT</option>
-            <option value="ip">IP SCAN</option>
-            <option value="domain">DOMAIN WHOIS</option>
-            <option value="person">PERSON SEARCH</option>
-            <option value="breach">BREACH CHECK</option>
-            <option value="username">USERNAME MULTI</option>
-            <option value="twitter">TWITTER API</option>
-            <option value="vk">VKONTAKTE API</option>
-            <option value="github">GITHUB API</option>
-            <option value="telegram">TELEGRAM</option>
-            <option value="tiktok">TIKTOK PARSER</option>
-            <option value="instagram">INSTAGRAM PARSER</option>
-            <option value="facebook">FACEBOOK PARSER</option>
-            <option value="ok">OK.RU PARSER</option>
-            <option value="discord">DISCORD</option>
-            <option value="snapchat">SNAPCHAT</option>
-            <option value="youtube">YOUTUBE</option>
-            <option value="twitch">TWITCH</option>
-            <option value="reddit">REDDIT</option>
-            <option value="linkedin">LINKEDIN</option>
-            <option value="pinterest">PINTEREST</option>
-            <option value="steam">STEAM</option>
-            <option value="epicgames">EPIC GAMES</option>
-            <option value="skype">SKYPE</option>
-            <option value="whatsapp">WHATSAPP</option>
-            <option value="googledork">GOOGLE DORK</option>
-            <option value="ddgdork">DDG DORK</option>
-            <option value="yandex">YANDEX</option>
-          </select>
-        </div>
-        <div class="search-box">
-          <div class="search-cursor"></div>
-          <input class="search-input" type="text" id="searchInput"
-            placeholder="ВВЕДИ ЗАПИТ — ТЕЛЕФОН / USERNAME / EMAIL / IP / ДОМЕН..."
-            autocomplete="off"
-            onkeydown="if(event.key==='Enter')doScan()">
-        </div>
-        <button class="scan-btn" id="scanBtn" onclick="doScan()">START SCAN</button>
-      </div>
-
-      <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
-
-      <!-- TOOL SELECTOR — USERNAME MODE ONLY -->
-      <div id="toolBar">
-        <span class="tool-label">Tools:</span>
-        <button class="preset-btn sel" id="preset-auto" onclick="setPreset('auto')">⚡ AUTO</button>
-        <button class="preset-btn" id="preset-fast" onclick="setPreset('fast')">🏃 FAST</button>
-        <button class="preset-btn" id="preset-deep" onclick="setPreset('deep')">🔬 DEEP</button>
-        <button class="preset-btn" id="preset-custom" onclick="setPreset('custom')">⚙ CUSTOM</button>
-        <div class="tool-sep"></div>
-        <label class="tool-toggle">
-          <div class="tool-dot" id="dot-sherlock"></div>
-          <input type="checkbox" id="cb-sherlock" checked>🔎 Sherlock
-        </label>
-        <label class="tool-toggle">
-          <div class="tool-dot" id="dot-maigret"></div>
-          <input type="checkbox" id="cb-maigret">🧩 Maigret
-        </label>
-        <label class="tool-toggle">
-          <div class="tool-dot" id="dot-snoop"></div>
-          <input type="checkbox" id="cb-snoop">🕵 Snoop
-        </label>
-        <div class="tool-hint" id="toolHint">⚡ AUTO — кирилиця→Snoop+Sherlock, латиниця→Sherlock+Maigret</div>
-      </div>
-    </div>
-
-    <!-- CONTENT GRID -->
-    <div class="content-area">
-
-      <!-- STAT STRIP -->
-      <div class="stat-strip">
-        <div class="stat-card">
-          <div class="sc-lbl">Status</div>
-          <span class="sc-ico">⚡</span>
-          <div class="sc-val" id="sc0">IDLE</div>
-          <div class="sc-sub" id="sc0s">Очікую запит...</div>
-        </div>
-        <div class="stat-card c">
-          <div class="sc-lbl">Target</div>
-          <span class="sc-ico">🎯</span>
-          <div class="sc-val" id="sc1" style="font-size:12px;color:var(--c1)">—</div>
-          <div class="sc-sub" id="sc1s">Не задано</div>
-        </div>
-        <div class="stat-card g">
-          <div class="sc-lbl">Found</div>
-          <span class="sc-ico">✓</span>
-          <div class="sc-val" id="sc2">—</div>
-          <div class="sc-sub" id="sc2s">Результатів</div>
-        </div>
-        <div class="stat-card w">
-          <div class="sc-lbl">Country</div>
-          <span class="sc-ico">🌍</span>
-          <div class="sc-val" id="sc3" style="font-size:12px">—</div>
-          <div class="sc-sub" id="sc3s">Країна</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-lbl">Operator</div>
-          <span class="sc-ico">📡</span>
-          <div class="sc-val" id="sc4" style="font-size:11px">—</div>
-          <div class="sc-sub" id="sc4s">Оператор/ISP</div>
-        </div>
-        <div class="stat-card p">
-          <div class="sc-lbl">Mode</div>
-          <span class="sc-ico">◈</span>
-          <div class="sc-val" id="sc5" style="font-size:10px;color:var(--info)">PHONE</div>
-          <div class="sc-sub" id="sc5s">Поточний режим</div>
-        </div>
-      </div>
-
-      <!-- ROW 1 -->
-      <!-- PANEL: SOCIAL/PROFILE -->
-      <div class="panel" id="pSocial">
-        <div class="ph">
-          <div class="ph-dot a"></div>
-          <span class="ph-title" id="pSocialTitle">SOCIAL ACCOUNTS</span>
-          <span class="ph-badge" id="pSocialBadge">WAITING</span>
-          <button class="ph-action" onclick="copyPanel('pSocialBody')">COPY</button>
-        </div>
-        <div class="pb" id="pSocialBody">
-          <div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">Не сканировано</div></div>
-        </div>
-      </div>
-
-      <!-- PANEL: TARGET INTEL -->
-      <div class="panel" id="pIntel">
-        <div class="ph">
-          <div class="ph-dot c"></div>
-          <span class="ph-title" id="pIntelTitle">TARGET INTELLIGENCE</span>
-          <span class="ph-badge" id="pIntelBadge">WAITING</span>
-          <button class="ph-action" onclick="copyPanel('pIntelBody')">COPY</button>
-        </div>
-        <div class="pb" id="pIntelBody">
-          <div class="empty"><div class="empty-ico">🎯</div><div class="empty-txt">Не сканировано</div></div>
-        </div>
-      </div>
-
-      <!-- PANEL: GEO/NETWORK -->
-      <div class="panel" id="pGeo">
-        <div class="ph">
-          <div class="ph-dot g"></div>
-          <span class="ph-title" id="pGeoTitle">GEO / NETWORK</span>
-          <span class="ph-badge" id="pGeoBadge">WAITING</span>
-        </div>
-        <div class="pb" id="pGeoBody">
-          <div class="empty"><div class="empty-ico">🌐</div><div class="empty-txt">Не сканировано</div></div>
-        </div>
-      </div>
-
-      <!-- ROW 2 -->
-      <!-- PANEL: ADDITIONAL -->
-      <div class="panel" id="pExtra">
-        <div class="ph">
-          <div class="ph-dot w"></div>
-          <span class="ph-title" id="pExtraTitle">ADDITIONAL DATA</span>
-          <span class="ph-badge" id="pExtraBadge">—</span>
-        </div>
-        <div class="pb" id="pExtraBody">
-          <div class="empty"><div class="empty-ico">📊</div><div class="empty-txt">Даних немає</div></div>
-        </div>
-      </div>
-
-      <!-- PANEL: MAP -->
-      <div class="panel" id="pMap">
-        <div class="ph">
-          <div class="ph-dot r"></div>
-          <span class="ph-title">LOCATION MAP</span>
-          <span class="ph-badge" id="mapBadge">NO FIX</span>
-        </div>
-        <div class="pb" style="padding:0;overflow:hidden">
-          <div class="empty" id="mapEmpty" style="height:100%;border:none">
-            <div class="empty-ico">🗺</div>
-            <div class="empty-txt">Чекаю координати</div>
-          </div>
-          <div id="map" style="display:none;height:100%"></div>
-        </div>
-      </div>
-
-      <!-- PANEL: LINKS/PLATFORMS -->
-      <div class="panel" id="pLinks">
-        <div class="ph">
-          <div class="ph-dot p"></div>
-          <span class="ph-title" id="pLinksTitle">PLATFORMS / LINKS</span>
-          <span class="ph-badge" id="pLinksBadge">—</span>
-        </div>
-        <div class="pb" id="pLinksBody">
-          <div class="empty"><div class="empty-ico">🔗</div><div class="empty-txt">Немає даних</div></div>
-        </div>
-      </div>
-
-    </div><!-- /content-area -->
-
-    <!-- STATUS BAR -->
-    <div class="statusbar">
-      <div class="sb-seg"><div class="dot ok"></div><strong id="sbMode">PHONE LOOKUP</strong></div>
-      <div class="sb-seg">API: <strong style="color:var(--ok)">Twitter</strong> <strong style="color:var(--ok)">VK</strong> <strong style="color:var(--ok)">IPInfo</strong> <strong style="color:var(--ok)">NumVerify</strong> <strong style="color:var(--ok)">HLR</strong> <strong style="color:var(--ok)">SerpAPI</strong></div>
-      <div class="sb-seg"><strong id="sbProxy">PROXY: OFF</strong></div>
-      <div class="sb-seg">Scans: <strong id="sbScans">0</strong></div>
-      <div class="sb-seg">Tools: <span id="sbTools" style="color:var(--a3)">checking...</span></div>
-      <div class="sb-seg"><strong id="sbDateTime">--.--.---- --:--:--</strong></div>
-    </div>
-
-  </main>
-</div><!-- /app -->
-
-<script>
-/* ═══════════════════════════════════════════════════════════════════
-   PROBIV BOT v4 — FRONTEND ENGINE
-   ~1500 lines of JavaScript
-═══════════════════════════════════════════════════════════════════ */
-
-/* ─── STATE ─── */
-const S = {
-  mode:        'phone',
-  preset:      'auto',
-  proxy:       'none',
-  scans:       0,
-  lastResult:  null,
-  toolsStatus: {},
-  map:         null,
-  mapMarker:   null,
-  scanActive:  false,
-};
-
-/* ─── PLACEHOLDERS ─── */
-const PH = {
-  phone:      '+380XXXXXXXXX або +7XXXXXXXXXX або +375XXXXXXXXX або +1XXXXXXXXXX',
-  email:      'user@example.com — повна OSINT перевірка',
-  ip:         '8.8.8.8 або домен example.com',
-  domain:     'example.com — WHOIS, DNS, SSL, HTTP перевірка',
-  person:     'Іван Іваненко або Ivan Ivanenko — Google OSINT',
-  breach:     'user@email.com або username — перевірка витоків',
-  username:   '@username або handle — Sherlock + Maigret + Snoop + 15 платформ',
-  twitter:    '@username або username — Twitter/X API v2',
-  vk:         'username, ID або https://vk.com/... — VK API',
-  github:     '@username або username — GitHub API v3',
-  telegram:   '@username або назва каналу/групи',
-  tiktok:     '@username — 10 стратегій парсингу',
-  instagram:  '@username — 12 стратегій парсингу',
-  facebook:   'username або URL сторінки',
-  ok:         'username або ID профілю OK.ru',
-  discord:    'username#1234 або username — Discord lookup',
-  snapchat:   '@username — Snapchat профіль',
-  youtube:    '@handle або ID каналу або URL',
-  twitch:     '@username — Twitch стример',
-  reddit:     'u/username — Reddit профіль',
-  linkedin:   'username або URL профілю LinkedIn',
-  pinterest:  '@username — Pinterest профіль',
-  steam:      'username або Steam64 ID або URL',
-  epicgames:  'username або EpicGames ID',
-  skype:      'username або live:username',
-  whatsapp:   '+380XXXXXXXXX — WhatsApp перевірка',
-  googledork: '"пошукова фраза" site:example.com OR filetype:pdf',
-  ddgdork:    '"фраза" OR "запит" site:example.com',
-  yandex:     'Іванов Іван Сергійович або @username',
-};
-
-const MODE_LABELS = {
-  phone:'PHONE LOOKUP', email:'EMAIL OSINT', ip:'IP SCAN', domain:'DOMAIN WHOIS',
-  person:'PERSON SEARCH', breach:'BREACH CHECK', username:'USERNAME MULTI',
-  twitter:'TWITTER API', vk:'VKONTAKTE API', github:'GITHUB API', telegram:'TELEGRAM',
-  tiktok:'TIKTOK PARSER', instagram:'INSTAGRAM PARSER', facebook:'FACEBOOK PARSER',
-  ok:'OK.RU PARSER', discord:'DISCORD', snapchat:'SNAPCHAT', youtube:'YOUTUBE',
-  twitch:'TWITCH', reddit:'REDDIT', linkedin:'LINKEDIN', pinterest:'PINTEREST',
-  steam:'STEAM', epicgames:'EPIC GAMES', skype:'SKYPE', whatsapp:'WHATSAPP',
-  googledork:'GOOGLE DORK', ddgdork:'DDG DORK', yandex:'YANDEX',
-};
-
-const USERNAME_MODES = new Set([
-  'username','tiktok','instagram','facebook','ok','discord','snapchat',
-  'youtube','twitch','reddit','linkedin','pinterest','steam','epicgames',
-  'skype','whatsapp',
-]);
-
-const API_MAP = {
-  phone:     '/api/phone',
-  email:     '/api/email',
-  ip:        '/api/ip',
-  domain:    '/api/domain',
-  person:    '/api/person',
-  breach:    '/api/breach',
-  username:  '/api/username/osint',
-  twitter:   '/api/username/twitter',
-  vk:        '/api/username/vk',
-  github:    '/api/username/github',
-  telegram:  '/api/username/telegram',
-  tiktok:    '/api/social/tiktok',
-  instagram: '/api/social/instagram',
-  facebook:  '/api/social/facebook',
-  ok:        '/api/social/ok',
-  discord:   '/api/social/discord',
-  snapchat:  '/api/social/snapchat',
-  youtube:   '/api/social/youtube',
-  twitch:    '/api/social/twitch',
-  reddit:    '/api/social/reddit',
-  linkedin:  '/api/social/linkedin',
-  pinterest: '/api/social/pinterest',
-  steam:     '/api/social/steam',
-  epicgames: '/api/social/epicgames',
-  skype:     '/api/social/skype',
-  whatsapp:  '/api/social/whatsapp',
-  googledork:'/api/dork/google',
-  ddgdork:   '/api/dork/ddg',
-  yandex:    '/api/dork/yandex',
-};
-
-/* ─── CLOCK ─── */
-function updateClock(){
-  const n = new Date();
-  const t = n.toLocaleTimeString('uk-UA');
-  const d = n.toLocaleDateString('uk-UA');
-  document.getElementById('clockTime').textContent = t;
-  document.getElementById('clockDate').textContent = d;
-  document.getElementById('sbDateTime').textContent = d + ' ' + t;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-/* ─── TOAST ─── */
-function toast(msg, type='info', dur=3500){
-  const tc = document.getElementById('toasts');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  const icons = {ok:'✓', err:'✗', warn:'⚠', info:'ℹ'};
-  el.innerHTML = `<span>${icons[type]||'ℹ'}</span><span style="flex:1">${msg}</span>`;
-  tc.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(16px)';
-    el.style.transition = 'all 0.3s';
-    setTimeout(() => el.remove(), 300);
-  }, dur);
-}
-
-/* ─── PROGRESS ─── */
-function setProgress(pct){
-  document.getElementById('progFill').style.width = pct + '%';
-}
-
-/* ─── MODE ─── */
-function setMode(m, el){
-  S.mode = m;
-  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
-  if(el) el.classList.add('active');
-  document.getElementById('modeSelect').value = m;
-  document.getElementById('searchInput').value = '';
-  document.getElementById('searchInput').placeholder = PH[m] || '...';
-  document.getElementById('sbMode').textContent = MODE_LABELS[m] || m.toUpperCase();
-  document.getElementById('sc5').textContent = (MODE_LABELS[m]||m).split(' ')[0].slice(0,8);
-  document.getElementById('toolBar').style.display = USERNAME_MODES.has(m) ? 'flex' : 'none';
-  resetPanels();
-}
-function setModeFromSelect(){
-  const m = document.getElementById('modeSelect').value;
-  const sbItem = document.querySelector(`.sb-item[data-mode="${m}"]`);
-  setMode(m, sbItem);
-}
-
-/* ─── SIDEBAR FILTER ─── */
-function filterSidebar(q){
-  const lo = q.toLowerCase().trim();
-  document.querySelectorAll('.sb-item').forEach(item => {
-    const label = item.querySelector('.si-label')?.textContent?.toLowerCase() || '';
-    const mode = item.dataset.mode || '';
-    item.style.display = (!lo || label.includes(lo) || mode.includes(lo)) ? '' : 'none';
-  });
-  document.querySelectorAll('.sb-cat').forEach(cat => {
-    const next = cat.nextElementSibling;
-    cat.style.display = '';
-  });
-}
-
-/* ─── NAV TABS ─── */
-function switchTab(el, tab){
-  document.querySelectorAll('.tb-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  const msgs = {
-    social: 'Social Parsers — обери платформу зліва і введи username',
-    geo: 'Geo-Intel — введи IP адресу або домен для геолокації',
-    dorks: 'Dorks — Google/DDG/Yandex пошук за допомогою операторів',
-    reports: 'Reports — натисни EXPORT для збереження звіту JSON',
-  };
-  if(msgs[tab]) toast(msgs[tab], 'info');
-}
-
-/* ─── TOOL PRESET ─── */
-const PRESET_HINTS = {
-  auto:   '⚡ AUTO — кирилиця→Snoop+Sherlock | CIS-ник→Snoop першим | латиниця→Sherlock+Maigret',
-  fast:   '🏃 FAST — тільки Sherlock (400+ сайтів, ~15-30 сек)',
-  deep:   '🔬 DEEP — всі доступні інструменти паралельно (~2-3 хв)',
-  custom: '⚙ CUSTOM — вручну вибери інструменти нижче',
-};
-function setPreset(p){
-  S.preset = p;
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('sel'));
-  document.getElementById(`preset-${p}`)?.classList.add('sel');
-  document.getElementById('toolHint').textContent = PRESET_HINTS[p] || '';
-  const locks = p !== 'custom';
-  ['sherlock','maigret','snoop'].forEach(t => {
-    const cb = document.getElementById(`cb-${t}`);
-    if(cb) cb.disabled = locks;
-  });
-  if(p === 'fast'){
-    document.getElementById('cb-sherlock').checked = true;
-    document.getElementById('cb-maigret').checked = false;
-    document.getElementById('cb-snoop').checked = false;
-  } else if(p === 'deep'){
-    ['sherlock','maigret','snoop'].forEach(t => {
-      const cb = document.getElementById(`cb-${t}`);
-      if(cb) cb.checked = true;
-    });
-  }
-}
-
-function getSelectedTools(){
-  if(S.preset !== 'custom') return S.preset;
-  const sel = ['sherlock','maigret','snoop'].filter(t => {
-    const cb = document.getElementById(`cb-${t}`);
-    return cb && cb.checked && !cb.disabled;
-  });
-  return sel.length ? sel : 'auto';
-}
-
-/* ─── CHECK TOOLS STATUS ─── */
-async function checkToolsStatus(){
-  try{
-    const r = await fetch('/api/username/tools_status');
-    S.toolsStatus = await r.json();
-    let txt = [];
-    for(const [name, info] of Object.entries(S.toolsStatus)){
-      const dot = document.getElementById(`dot-${name}`);
-      const btn = document.getElementById(`tBtn-${name}`);
-      if(dot) dot.className = `tool-dot ${info.installed ? 'ok' : 'err'}`;
-      if(btn) btn.className = `sb-tool-btn ${info.installed ? 'active' : 'inactive'}`;
-      if(info.installed) txt.push(name.toUpperCase());
-    }
-    document.getElementById('sbTools').textContent = txt.length ? txt.join(' + ') : 'none installed';
-    if(!txt.length) toast('Зовнішні інструменти не встановлені — використовую вбудований парсер', 'warn', 5000);
-    else toast('Знайдено: ' + txt.join(', '), 'ok');
-  }catch(e){
-    document.getElementById('sbTools').textContent = 'error';
-  }
-}
-
-function toggleTool(name){
-  const btn = document.getElementById(`tBtn-${name}`);
-  const cb = document.getElementById(`cb-${name}`);
-  if(cb){
-    cb.checked = !cb.checked;
-    if(S.preset !== 'custom') setPreset('custom');
-  }
-  toast(`${name}: ${cb?.checked ? 'ENABLED' : 'DISABLED'}`, cb?.checked ? 'ok' : 'warn');
-}
-
-/* ─── SCAN ─── */
-async function doScan(){
-  if(S.scanActive){ toast('Скан вже виконується...','warn'); return; }
-  const q = document.getElementById('searchInput').value.trim();
-  if(!q){ toast('Введи запит для скану','err'); return; }
-
-  S.scanActive = true;
-  S.scans++;
-  document.getElementById('scanCount').textContent = S.scans;
-  document.getElementById('sbScans').textContent = S.scans;
-
-  const btn = document.getElementById('scanBtn');
-  btn.textContent = 'SCANNING...';
-  btn.classList.add('running');
-
-  // Update stats
-  document.getElementById('sc0').textContent = 'SCAN';
-  document.getElementById('sc0').className = 'sc-val loading';
-  document.getElementById('sc0s').textContent = 'Виконую запит...';
-  const shortQ = q.length > 14 ? q.slice(0,14)+'…' : q;
-  document.getElementById('sc1').textContent = shortQ;
-  document.getElementById('sc1s').textContent = S.mode.toUpperCase();
-
-  setLoadingPanels();
-  setProgress(5);
-
-  const endpoint = API_MAP[S.mode] || '/api/phone';
-  const body = { query: q };
-  if(USERNAME_MODES.has(S.mode)) body.tools = getSelectedTools();
-  if(S.mode !== 'username') body.parser = S.mode;
-
-  try{
-    setProgress(30);
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body),
-    });
-    setProgress(75);
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    S.lastResult = { mode: S.mode, query: q, data, ts: new Date().toISOString() };
-    setProgress(100);
-    setTimeout(() => setProgress(0), 600);
-    renderResult(data);
-    document.getElementById('sc0').textContent = 'DONE';
-    document.getElementById('sc0').className = 'sc-val ok';
-    document.getElementById('sc0s').textContent = new Date().toLocaleTimeString('uk-UA');
-    toast('Скан завершено', 'ok', 2000);
-  }catch(err){
-    setProgress(0);
-    document.getElementById('sc0').textContent = 'ERR';
-    document.getElementById('sc0').className = 'sc-val err';
-    document.getElementById('sc0s').textContent = err.message;
-    toast('Помилка: ' + err.message, 'err');
-    resetPanels();
-  }
-
-  btn.textContent = 'START SCAN';
-  btn.classList.remove('running');
-  S.scanActive = false;
-}
-
-function setLoadingPanels(){
-  const loaderHTML = `<div class="loader"><div class="loader-bars">${Array(5).fill('<div class="loader-bar"></div>').join('')}</div><div class="loader-txt">SCANNING...</div></div>`;
-  ['pSocialBody','pIntelBody','pGeoBody','pExtraBody','pLinksBody'].forEach(id => {
-    document.getElementById(id).innerHTML = loaderHTML;
-  });
-  ['pSocial','pIntel','pGeo','pExtra','pLinks'].forEach(id => {
-    document.getElementById(id)?.classList.add('scanning');
-  });
-}
-
-function resetPanels(){
-  const empty = (icon, txt) => `<div class="empty"><div class="empty-ico">${icon}</div><div class="empty-txt">${txt}</div></div>`;
-  document.getElementById('pSocialBody').innerHTML = empty('👤','Не сканировано');
-  document.getElementById('pIntelBody').innerHTML  = empty('🎯','Не сканировано');
-  document.getElementById('pGeoBody').innerHTML    = empty('🌐','Не сканировано');
-  document.getElementById('pExtraBody').innerHTML  = empty('📊','Даних немає');
-  document.getElementById('pLinksBody').innerHTML  = empty('🔗','Немає даних');
-  ['pSocial','pIntel','pGeo','pExtra','pLinks'].forEach(id => {
-    document.getElementById(id)?.classList.remove('scanning');
-  });
-  hideMap();
-}
-
-/* ─── RENDER DISPATCH ─── */
-function renderResult(d){
-  ['pSocial','pIntel','pGeo','pExtra','pLinks'].forEach(id => {
-    document.getElementById(id)?.classList.remove('scanning');
-  });
-  const m = S.mode;
-  if(m === 'phone')      renderPhone(d);
-  else if(m === 'email') renderEmail(d);
-  else if(m === 'ip')    renderIP(d);
-  else if(m === 'domain')renderDomain(d);
-  else if(m === 'twitter')renderTwitter(d);
-  else if(m === 'vk')    renderVK(d);
-  else if(m === 'github')renderGitHub(d);
-  else if(m === 'telegram')renderTelegram(d);
-  else if(m === 'person')renderPerson(d);
-  else if(m === 'breach')renderBreach(d);
-  else if(m === 'username')renderUsername(d);
-  else if(m === 'googledork'||m==='ddgdork'||m==='yandex') renderDork(d);
-  else renderGenericSocial(d);
-}
-
-/* ─── HELPERS ─── */
-function rows(obj){
-  return Object.entries(obj).map(([k,v]) => {
-    if(v === null || v === undefined || v === '') return '';
-    let cls = 'dv';
-    if(v === true || v === 'YES') cls += ' ok';
-    else if(v === false || v === 'NO' || v === '✗') cls += ' err';
-    else if(String(v).startsWith('+') && String(v).length > 8) cls += ' hi';
-    const disp = v === true ? '✓ YES' : v === false ? '✗ NO' : String(v);
-    return `<div class="dr"><span class="dk">${k}</span><span class="${cls}">${disp}</span></div>`;
-  }).filter(Boolean).join('');
-}
-
-function profileCard(ava, name, user, bio, badge){
-  const img = ava
-    ? `<img class="pava" src="${ava}" onerror="this.parentNode.innerHTML='<div class=pava-ph>👤</div>'">`
-    : `<div class="pava-ph">👤</div>`;
-  return `<div class="profile-box">
-    ${img}
-    <div class="pinfo">
-      <div class="pname">${name||user||'—'} ${badge?`<span class="ptag">${badge}</span>`:''}</div>
-      <div class="puser">@${user||'—'}</div>
-      ${bio?`<div class="pbio">${bio.slice(0,120)}</div>`:''}
-    </div>
-  </div>`;
-}
-
-function setBadge(id, txt, type=''){
-  const el = document.getElementById(id);
-  if(el){ el.textContent = txt; el.className = `ph-badge${type?' '+type:''}`; }
-}
-
-function setStatCards(found, country, operator, sub){
-  document.getElementById('sc2').textContent = found !== undefined && found !== null ? String(found) : '—';
-  document.getElementById('sc2').className = 'sc-val' + (found ? ' ok' : '');
-  document.getElementById('sc3').textContent = (country||'—').slice(0,12);
-  document.getElementById('sc4').textContent = (operator||'—').slice(0,10);
-  if(sub) document.getElementById('sc2s').textContent = sub;
-}
-
-/* ─── RENDER: PHONE ─── */
-function renderPhone(d){
-  const op = d.operator || d.numverify_carrier || d.carrier || '—';
-  const country = d.country || '—';
-  const region = d.region || '—';
-  const type = d.type || '—';
-  const valid = d.valid;
-
-  setStatCards(valid ? '✓ VALID' : '✗ INVALID', country, op, valid ? 'Номер дійсний' : 'Невалідний');
-  document.getElementById('sc2').className = `sc-val ${valid ? 'ok' : 'err'}`;
-
-  document.getElementById('pSocialTitle').textContent = 'PHONE INFO';
-  setBadge('pSocialBadge', d.flag || '', 'live');
-  document.getElementById('pSocialBody').innerHTML = rows({
-    'Номер (E.164)': d.e164 || d.raw || '—',
-    'Міжнар. формат': d.intl || '—',
-    'Нац. формат': d.national || '—',
-    'Валідний': valid,
-    'Тип': type,
-    'Країна': country,
-    'Регіон/Місто': region,
-    'Оператор': op,
-    'Прапор': d.flag || '—',
-  });
-
-  document.getElementById('pIntelTitle').textContent = 'API DATA';
-  setBadge('pIntelBadge', 'HLR+NumVerify');
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'Тайм-зони': (d.timezones||[]).join(', ') || '—',
-    'NumVerify оп.': d.numverify_carrier || '—',
-    'NumVerify тип': d.numverify_line || '—',
-    'NumVerify країна': d.numverify_country || '—',
-    'HLR статус': d.hlr_status || '—',
-    'HLR мережа': d.hlr_network || '—',
-    'HLR перенесений': d.hlr_ported !== undefined ? String(d.hlr_ported) : '—',
-  });
-
-  document.getElementById('pGeoTitle').textContent = 'GEO / NETWORK';
-  document.getElementById('pGeoBody').innerHTML = rows({
-    'Країна': country,
-    'Регіон': region,
-    'Оператор': op,
-  });
-
-  document.getElementById('pExtraBody').innerHTML = `
-    <div class="cat-line"><span class="cat-ico">📡</span><span class="cat-name">Визначення по базі</span></div>
-    <div class="terminal">
-      <span class="tl-info">[LOCAL]</span> Перевірка по вбудованій базі UA/RU/KZ/BY/MD/US...<br>
-      <span class="tl-ok">[OK]</span> Країна: ${country}<br>
-      <span class="tl-ok">[OK]</span> Оператор: ${op}<br>
-      <span class="${valid?'tl-ok':'tl-err'}">[${valid?'VALID':'INVALID'}]</span> ${d.e164||d.raw||'—'}<br>
-      ${d.hlr_status?`<span class="tl-info">[HLR]</span> ${d.hlr_status}`:''} 
-    </div>`;
-
-  document.getElementById('pLinksBody').innerHTML = `
-    <div class="empty"><div class="empty-ico">💡</div><div class="empty-txt">Переключись в Username mode для пошуку по соцмережах</div></div>`;
-}
-
-/* ─── RENDER: EMAIL ─── */
-function renderEmail(d){
-  setStatCards(d.mx_valid ? 'MX ✓' : 'MX ✗', d.domain, d.google_hits ? d.google_hits+' hits' : '—', d.domain||'');
-  document.getElementById('sc2').className = `sc-val ${d.mx_valid ? 'ok' : 'err'}`;
-
-  document.getElementById('pSocialTitle').textContent = 'EMAIL INFO';
-  setBadge('pSocialBadge', d.mx_valid ? 'MX OK' : 'MX FAIL', d.mx_valid ? 'live' : 'err');
-  document.getElementById('pSocialBody').innerHTML = rows({
-    'Email': d.email,
-    'Домен': d.domain,
-    'MX валідний': d.mx_valid,
-    'MX записи': (d.mx||[]).slice(0,3).join(', ') || '—',
-  });
-
-  document.getElementById('pIntelTitle').textContent = 'GOOGLE INTEL';
-  setBadge('pIntelBadge', (d.google_hits||0)+' results');
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'Google hits': d.google_hits || 0,
-    'Gravatar': d.socials?.Gravatar,
-    'HaveIBeenPwned': d.socials?.HaveIBeenPwned,
-  }) + (d.google_top||[]).map(l => `
-    <div class="result-item">
-      <div class="ri-url">${l.replace(/^https?:\/\//,'').slice(0,60)}</div>
-      <a class="xlink" href="${l}" target="_blank">OPEN →</a>
-    </div>`).join('');
-
-  document.getElementById('pLinksBody').innerHTML = (d.google_top||[]).length ?
-    d.google_top.map(l => `<div class="dr"><a class="xlink" href="${l}" target="_blank">${l.replace(/^https?:\/\//,'').slice(0,50)}</a></div>`).join('')
-    : '<div class="empty"><div class="empty-txt">Немає Google результатів</div></div>';
-}
-
-/* ─── RENDER: IP ─── */
-function renderIP(d){
-  const loc = d.loc ? d.loc.split(',') : [];
-  setStatCards(d.ip ? '✓' : '✗', d.country, d.org||d.isp||'—', d.city||'');
-
-  document.getElementById('pSocialTitle').textContent = 'IP INFO';
-  setBadge('pSocialBadge', d.ip||'—', 'live');
-  document.getElementById('pSocialBody').innerHTML = rows({
-    'IP': d.ip,
-    'Hostname': d.hostname||'—',
-    'PTR запис': d.ptr||'—',
-    'Країна': d.country,
-    'Регіон': d.region,
-    'Місто': d.city,
-    'Поштовий': d.postal||'—',
-    'Тайм-зона': d.timezone||'—',
-  });
-
-  document.getElementById('pIntelTitle').textContent = 'NETWORK INTEL';
-  setBadge('pIntelBadge', d.proxy?'PROXY':'DIRECT', d.proxy?'err':'live');
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'ISP': d.isp||'—',
-    'Організація': d.org||d.as||'—',
-    'AS': d.as||'—',
-    'Proxy/VPN': d.proxy,
-    'Хостинг': d.hosting,
-    'Mobile': d.mobile,
-  });
-
-  if(loc.length === 2){
-    const lat = parseFloat(loc[0]), lon = parseFloat(loc[1]);
-    document.getElementById('pGeoBody').innerHTML = `
-      <div class="coord-box">
-        <div class="coord"><span class="coord-k">LAT</span><span class="coord-v">${lat.toFixed(4)}</span></div>
-        <div class="coord"><span class="coord-k">LON</span><span class="coord-v">${lon.toFixed(4)}</span></div>
-      </div>` + rows({'Країна':d.country,'Місто':d.city,'Регіон':d.region});
-    showMap(lat, lon, `${d.city||''}, ${d.country||''}`);
-  }
-}
-
-/* ─── RENDER: DOMAIN ─── */
-function renderDomain(d){
-  setStatCards(d.registrar?'FOUND':'—', d.country, d.ip, d.domain||'');
-
-  document.getElementById('pSocialTitle').textContent = 'WHOIS INFO';
-  setBadge('pSocialBadge', d.registrar||'—');
-  document.getElementById('pSocialBody').innerHTML = rows({
-    'Domain': d.domain,
-    'Registrar': d.registrar||'—',
-    'Created': d.created||'—',
-    'Expires': d.expires||'—',
-    'Updated': d.updated||'—',
-    'Org': d.org||'—',
-    'Country': d.country||'—',
-    'Status': Array.isArray(d.status)?d.status[0]:d.status||'—',
-  });
-
-  document.getElementById('pIntelTitle').textContent = 'TECH INFO';
-  setBadge('pIntelBadge', d.http_status ? `HTTP ${d.http_status}` : '—', d.ssl ? 'live' : '');
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'IP': d.ip||'—',
-    'SSL/HTTPS': d.ssl,
-    'HTTP Status': d.http_status||'—',
-    'Server': d.server||'—',
-    'Powered-By': d.powered_by||'—',
-    'Emails': (d.emails||[]).join(', ')||'—',
-    'NS servers': (d.ns||[]).slice(0,3).join(', ')||'—',
-  });
-
-  if(d.dns){
-    document.getElementById('pGeoBody').innerHTML = Object.entries(d.dns).map(([type,vals])=>
-      `<div class="dr"><span class="dk">${type}</span><span class="dv" style="font-size:9px;word-break:break-all">${Array.isArray(vals)?vals.slice(0,2).join(' | '):vals}</span></div>`
-    ).join('');
-    setBadge('pGeoBadge', 'DNS RECORDS');
-  }
-}
-
-/* ─── RENDER: TWITTER ─── */
-function renderTwitter(d){
-  if(!d.found){ renderNotFound('Twitter'); return; }
-  setStatCards(d.followers?.toLocaleString(), 'Twitter', '𝕏 Found', d.username||'');
-  document.getElementById('sc2').className = 'sc-val ok';
-
-  document.getElementById('pSocialTitle').textContent = 'TWITTER PROFILE';
-  setBadge('pSocialBadge', d.verified ? '✓ VERIFIED' : 'REGULAR', d.verified ? 'live' : '');
-  document.getElementById('pSocialBody').innerHTML =
-    profileCard(d.avatar, d.name, d.username, d.bio, 'Twitter') +
-    rows({'ID':d.id,'Location':d.location||'—','Created':d.created?.split('T')[0]||'—','Verified':d.verified});
-
-  document.getElementById('pIntelTitle').textContent = 'METRICS';
-  document.getElementById('pIntelBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-      ${metricBox('FOLLOWERS', (d.followers||0).toLocaleString())}
-      ${metricBox('FOLLOWING', (d.following||0).toLocaleString())}
-      ${metricBox('TWEETS', (d.tweets||0).toLocaleString())}
-      ${metricBox('LISTED', (d.listed||0).toLocaleString())}
-    </div>`;
-
-  document.getElementById('pLinksBody').innerHTML =
-    `<div class="dr"><a class="xlink" href="${d.url}" target="_blank">→ OPEN TWITTER PROFILE</a></div>`;
-}
-
-/* ─── RENDER: VK ─── */
-function renderVK(d){
-  if(!d.found){ renderNotFound('VKontakte'); return; }
-  setStatCards(d.followers?.toLocaleString(), 'VK', 'VK Found', d.name||'');
-  document.getElementById('sc2').className = 'sc-val ok';
-
-  document.getElementById('pSocialTitle').textContent = 'VK PROFILE';
-  setBadge('pSocialBadge', d.verified ? '✓ VERIFIED' : 'REGULAR', d.verified ? 'live' : '');
-  document.getElementById('pSocialBody').innerHTML =
-    profileCard(d.avatar, d.name, d.username||'id'+d.id, d.bio||d.status, 'VK') +
-    rows({'ID':d.id,'Sex':d.sex||'—','BDate':d.bdate||'—','Rel.':d.relation||'—','City':d.city||'—','Country':d.country||'—','Site':d.site||'—','Verified':d.verified});
-
-  document.getElementById('pIntelTitle').textContent = 'COUNTERS';
-  document.getElementById('pIntelBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-      ${metricBox('FOLLOWERS', (d.followers||0).toLocaleString())}
-      ${metricBox('FRIENDS', (d.friends||0).toLocaleString())}
-      ${metricBox('PHOTOS', (d.photos||0).toLocaleString())}
-      ${metricBox('VIDEOS', (d.videos||0).toLocaleString())}
-      ${metricBox('GROUPS', (d.groups||0).toLocaleString())}
-      ${metricBox('ALBUMS', (d.albums||0).toLocaleString())}
-    </div>`;
-
-  document.getElementById('pExtraBody').innerHTML = rows({
-    'Інтереси': d.interests||'—',
-    'Музика': d.music||'—',
-    'Заняття': d.occupation||'—',
-  });
-
-  document.getElementById('pLinksBody').innerHTML =
-    `<div class="dr"><a class="xlink" href="${d.url}" target="_blank">→ OPEN VK PROFILE</a></div>`;
-}
-
-/* ─── RENDER: GITHUB ─── */
-function renderGitHub(d){
-  if(!d.found){ renderNotFound('GitHub'); return; }
-  setStatCards(d.followers, 'GitHub', 'GH Found', d.username||'');
-  document.getElementById('sc2').className = 'sc-val ok';
-
-  document.getElementById('pSocialTitle').textContent = 'GITHUB PROFILE';
-  setBadge('pSocialBadge', d.site_admin ? 'ADMIN' : 'USER', d.site_admin ? 'err' : '');
-  document.getElementById('pSocialBody').innerHTML =
-    profileCard(d.avatar, d.name, d.username, d.bio, 'GitHub') +
-    rows({'ID':d.id,'Company':d.company||'—','Location':d.location||'—','Email':d.email||'—','Twitter':d.twitter||'—','Blog':d.blog||'—','Hireable':d.hireable,'Created':d.created,'Updated':d.updated});
-
-  document.getElementById('pIntelTitle').textContent = 'ACTIVITY';
-  document.getElementById('pIntelBody').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
-      ${metricBox('REPOS', d.public_repos||0)}
-      ${metricBox('GISTS', d.public_gists||0)}
-      ${metricBox('FOLLOWERS', d.followers||0)}
-      ${metricBox('FOLLOWING', d.following||0)}
-    </div>
-    ${d.top_repos?.length ? '<div class="cat-line"><span class="cat-name">Top Repos</span></div>' + d.top_repos.map(r=>`<div class="result-item"><div class="ri-title">${r.name} <span style="color:var(--a3)">★${r.stars}</span> <span style="color:var(--t3);font-size:8px">${r.language||''}</span></div><a class="xlink" href="${r.url}" target="_blank">OPEN →</a></div>`).join('') : ''}`;
-
-  document.getElementById('pLinksBody').innerHTML =
-    `<div class="dr"><a class="xlink" href="${d.url}" target="_blank">→ OPEN GITHUB PROFILE</a></div>`;
-}
-
-/* ─── RENDER: TELEGRAM ─── */
-function renderTelegram(d){
-  if(!d.found){ renderNotFound('Telegram'); return; }
-  setStatCards(d.subscribers||d.members||'—', 'Telegram', d.is_channel ? 'CHANNEL' : 'USER', d.name||'');
-  document.getElementById('sc2').className = 'sc-val ok';
-
-  document.getElementById('pSocialTitle').textContent = 'TELEGRAM';
-  setBadge('pSocialBadge', d.verified ? '✓ VERIFIED' : (d.scam ? '⚠ SCAM' : 'OK'), d.scam ? 'err' : d.verified ? 'live' : '');
-  document.getElementById('pSocialBody').innerHTML =
-    profileCard(d.avatar, d.name, d.username, d.description, d.is_channel ? 'Channel' : 'User') +
-    rows({'Verified':d.verified,'Scam':d.scam,'Channel':d.is_channel});
-
-  document.getElementById('pIntelTitle').textContent = 'STATS';
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'Підписники': d.subscribers?.toLocaleString()||'—',
-    'Учасники': d.members?.toLocaleString()||'—',
-    'Online': d.online?.toLocaleString()||'—',
-    'Extra': d.extra||'—',
-  });
-
-  document.getElementById('pLinksBody').innerHTML =
-    `<div class="dr"><a class="xlink" href="${d.url}" target="_blank">→ OPEN TELEGRAM</a></div>`;
-}
-
-/* ─── RENDER: PERSON ─── */
-function renderPerson(d){
-  setStatCards(d.results_count||0, '—', 'Google', 'Знайдено результатів');
-  document.getElementById('sc2').className = 'sc-val ok';
-
-  document.getElementById('pSocialTitle').textContent = 'PERSON SEARCH';
-  setBadge('pSocialBadge', (d.results_count||0)+' results');
-  document.getElementById('pSocialBody').innerHTML = (d.results||[]).slice(0,6).map(r=>`
-    <div class="result-item">
-      <div class="ri-title">${(r.title||'').slice(0,55)}</div>
-      <div class="ri-snip">${(r.snippet||'').slice(0,80)}</div>
-      <a class="xlink" href="${r.link}" target="_blank">${r.link.replace(/^https?:\/\//,'').slice(0,45)}</a>
-    </div>`).join('') || '<div class="empty"><div class="empty-txt">Не знайдено</div></div>';
-
-  document.getElementById('pIntelTitle').textContent = 'SOCIAL LINKS';
-  document.getElementById('pIntelBody').innerHTML = (d.social_results||[]).map(r=>`
-    <div class="dr">
-      <span class="dk">${r.platform||'—'}</span>
-      <a class="xlink" href="${r.link}" target="_blank">OPEN →</a>
-    </div>`).join('') || '<div class="empty"><div class="empty-txt">Соцмережі не знайдено</div></div>';
-}
-
-/* ─── RENDER: BREACH ─── */
-function renderBreach(d){
-  const cnt = d.breaches_count || 0;
-  setStatCards(cnt > 0 ? `${cnt} LEAKS` : 'CLEAN', '—', 'HIBP', cnt > 0 ? 'Знайдено витоків' : 'Чистий');
-  document.getElementById('sc2').className = `sc-val ${cnt > 0 ? 'err' : 'ok'}`;
-
-  document.getElementById('pSocialTitle').textContent = 'BREACH RESULTS';
-  setBadge('pSocialBadge', cnt > 0 ? `${cnt} BREACHES` : 'CLEAN', cnt > 0 ? 'err' : 'live');
-  document.getElementById('pSocialBody').innerHTML = cnt > 0 ?
-    (d.breaches||[]).map(b=>`
-      <div class="result-item">
-        <div class="ri-title" style="color:var(--err)">${b.Name||'—'}</div>
-        <div class="ri-snip">Дата: ${b.BreachDate||'—'} | Records: ${(b.PwnCount||0).toLocaleString()}</div>
-        ${b.DataClasses?.length ? `<div class="tags">${b.DataClasses.slice(0,4).map(dc=>`<span class="tag">${dc}</span>`).join('')}</div>` : ''}
-      </div>`).join('')
-    : `<div class="found-b yes" style="margin:12px auto;display:flex">✓ CLEAN — витоків не знайдено</div>`;
-
-  document.getElementById('pIntelBody').innerHTML = rows({
-    'Query': d.query,
-    'Статус': cnt > 0 ? `${cnt} витоків` : 'Чистий',
-    'Джерело': 'HaveIBeenPwned',
-  });
-}
-
-/* ─── RENDER: USERNAME MULTI ─── */
-function renderUsername(d){
-  const found = d.found || {};
-  const foundKeys = Object.keys(found);
-  const cnt = foundKeys.length;
-  const tools = d.tools_used || [];
-
-  setStatCards(cnt, '—', tools.join('+').toUpperCase() || 'BUILTIN', `з ${cnt+(d.not_found?.length||0)} платформ`);
-  document.getElementById('sc2').className = `sc-val ${cnt > 0 ? 'ok' : 'err'}`;
-
-  document.getElementById('pSocialTitle').textContent = `FOUND ACCOUNTS (${cnt})`;
-  setBadge('pSocialBadge', tools.join('+') || 'BUILTIN');
-  document.getElementById('pSocialBody').innerHTML = cnt ?
-    foundKeys.map(plat => {
-      const info = found[plat];
-      const url = typeof info === 'string' ? info : (info?.url || '#');
-      const src = typeof info === 'object' ? info?.source : '';
-      return `<div class="dr">
-        <span class="dk" style="max-width:100px">${plat}</span>
-        <div style="display:flex;align-items:center;gap:5px">
-          <a class="xlink" href="${url}" target="_blank">OPEN →</a>
-          ${src?`<span style="font-size:7px;color:var(--t3)">[${src}]</span>`:''}
-        </div>
-      </div>`;
-    }).join('')
-    : '<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Не знайдено на жодній платформі</div></div>';
-
-  document.getElementById('pIntelTitle').textContent = 'TOOL BREAKDOWN';
-  const toolLog = d.tool_results ? Object.entries(d.tool_results).map(([name,tr])=>
-    `<span class="${tr.count>0?'tl-ok':'tl-dim'}">[${name.toUpperCase()}]</span> ${tr.count||0} знайдено — ${tr.status||'—'}<br>`
-  ).join('') : '';
-  document.getElementById('pIntelBody').innerHTML = `
-    <div style="font-family:var(--fm);font-size:9px;color:var(--a3);padding:4px 0;border-bottom:1px solid var(--b1);margin-bottom:8px">${d.auto_reason||''}</div>
-    <div class="terminal">${toolLog || '<span class="tl-info">Builtin scan</span>'}</div>
-    ${d.note?`<div style="margin-top:8px;font-size:8px;color:var(--warn)">${d.note}</div>`:''}`;
-
-  document.getElementById('pLinksBody').innerHTML = `
-    <div class="chips">
-      ${foundKeys.map(plat => {
-        const info = found[plat];
-        const url = typeof info === 'string' ? info : (info?.url || '#');
-        return `<div class="chip found" onclick="window.open('${url}','_blank')" title="${url}">${plat}</div>`;
-      }).join('')}
-      ${(d.not_found||[]).map(p => `<div class="chip miss">${p}</div>`).join('')}
-    </div>`;
-}
-
-/* ─── RENDER: GENERIC SOCIAL ─── */
-function renderGenericSocial(d){
-  const found = d.found !== false;
-  setStatCards(found ? 'FOUND' : 'NOT FOUND', d.platform||'—', found ? 'OK' : '—', d.username||'');
-  document.getElementById('sc2').className = `sc-val ${found ? 'ok' : 'err'}`;
-
-  if(!found){ renderNotFound(d.platform||S.mode); return; }
-
-  document.getElementById('pSocialTitle').textContent = (d.platform||S.mode).toUpperCase() + ' PROFILE';
-  setBadge('pSocialBadge', d.verified ? '✓ VERIFIED' : 'FOUND', d.verified ? 'live' : '');
-  document.getElementById('pSocialBody').innerHTML =
-    profileCard(d.avatar, d.name, d.username, d.bio||d.description||d.status, d.platform) +
-    rows(Object.fromEntries(
-      Object.entries(d).filter(([k]) => !['platform','found','avatar','bio','description','status','source','strategy','url'].includes(k)).slice(0,12)
-    ));
-
-  if(d.url){
-    document.getElementById('pLinksBody').innerHTML =
-      `<div class="dr"><a class="xlink" href="${d.url}" target="_blank">→ OPEN ${(d.platform||S.mode).toUpperCase()} PROFILE</a></div>`;
-  }
-
-  const metrics = {};
-  ['followers','following','posts','likes','videos','subscribers','members','friends','repos','games'].forEach(k => {
-    if(d[k] !== undefined && d[k] !== null) metrics[k.charAt(0).toUpperCase()+k.slice(1)] = typeof d[k]==='number' ? d[k].toLocaleString() : d[k];
-  });
-  if(Object.keys(metrics).length){
-    document.getElementById('pIntelTitle').textContent = 'METRICS';
-    document.getElementById('pIntelBody').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        ${Object.entries(metrics).map(([k,v]) => metricBox(k.toUpperCase(), v)).join('')}
-      </div>`;
-  }
-}
-
-/* ─── RENDER: DORK ─── */
-function renderDork(d){
-  const cnt = (d.results||[]).length;
-  setStatCards(cnt, '—', d.engine||'Google', cnt + ' results');
-  document.getElementById('sc2').className = `sc-val ${cnt > 0 ? 'ok' : 'err'}`;
-
-  document.getElementById('pSocialTitle').textContent = (d.engine||'GOOGLE').toUpperCase() + ' DORK RESULTS';
-  setBadge('pSocialBadge', cnt + ' hits');
-  document.getElementById('pSocialBody').innerHTML = (d.results||[]).slice(0,6).map(r=>`
-    <div class="dork-r">
-      <div class="ri-title">${(r.title||'').slice(0,55)}</div>
-      <div class="ri-snip">${(r.snippet||'').slice(0,80)}</div>
-      <a class="xlink" href="${r.link}" target="_blank">${r.link.replace(/^https?:\/\//,'').slice(0,50)}</a>
-    </div>`).join('') || '<div class="empty"><div class="empty-txt">Нічого не знайдено</div></div>';
-
-  document.getElementById('pLinksBody').innerHTML = (d.results||[]).slice(0,10).map(r=>
-    `<div class="dr"><a class="xlink" href="${r.link}" target="_blank">${r.link.replace(/^https?:\/\//,'').slice(0,55)}</a></div>`
-  ).join('');
-}
-
-/* ─── RENDER: NOT FOUND ─── */
-function renderNotFound(platform){
-  const html = `<div class="found-b no" style="margin:12px auto;display:flex">✗ NOT FOUND — ${platform}</div>`;
-  ['pSocialBody','pIntelBody','pGeoBody','pExtraBody'].forEach(id => {
-    document.getElementById(id).innerHTML = html;
-  });
-}
-
-/* ─── METRIC BOX ─── */
-function metricBox(label, value){
-  return `<div style="background:rgba(255,170,0,0.04);border:1px solid var(--b1);border-radius:3px;padding:6px 8px">
-    <div style="font-family:var(--fm);font-size:7px;letter-spacing:2px;color:var(--t3)">${label}</div>
-    <div style="font-family:var(--fh);font-size:14px;color:var(--a1);margin-top:2px">${value}</div>
-  </div>`;
-}
-
-/* ─── MAP ─── */
-function showMap(lat, lon, label){
-  document.getElementById('mapEmpty').style.display = 'none';
-  const mapEl = document.getElementById('map');
-  mapEl.style.display = 'block';
-  document.getElementById('mapBadge').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
-
-  if(!S.map){
-    S.map = L.map('map', {zoomControl:true, attributionControl:false}).setView([lat,lon],11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(S.map);
-  } else {
-    S.map.setView([lat,lon],11);
-    if(S.mapMarker) S.mapMarker.remove();
-  }
-  const icon = L.divIcon({
-    html:`<div style="width:10px;height:10px;background:var(--err);border:2px solid #ff8800;border-radius:50%;box-shadow:0 0 12px var(--err),0 0 24px rgba(255,34,85,0.4)"></div>`,
-    iconSize:[10,10], className:''
-  });
-  S.mapMarker = L.marker([lat,lon],{icon}).addTo(S.map);
-  S.mapMarker.bindPopup(`<b style="font-family:monospace;color:var(--a1)">${label}</b><br><span style="font-family:monospace;font-size:10px">${lat}, ${lon}</span>`);
-  setBadge('mapBadge', `${lat.toFixed(4)}, ${lon.toFixed(4)}`, 'live');
-  setTimeout(() => S.map?.invalidateSize(), 100);
-}
-
-function hideMap(){
-  document.getElementById('mapEmpty').style.display = '';
-  document.getElementById('map').style.display = 'none';
-  document.getElementById('mapBadge').textContent = 'NO FIX';
-}
-
-/* ─── PROXY ─── */
-function openProxy(){ document.getElementById('proxyOverlay').classList.add('open') }
-function closeProxy(){ document.getElementById('proxyOverlay').classList.remove('open') }
-async function applyProxy(){
-  const type = document.querySelector('input[name="pt"]:checked')?.value || 'none';
-  const custom = document.getElementById('customProxyInput').value.trim();
-  try{
-    const r = await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,custom})});
-    const d = await r.json();
-    S.proxy = type;
-    const labels = {tor:'TOR',custom:'CUSTOM',none:'OFF'};
-    document.getElementById('proxyStatus').textContent = labels[type] || 'OFF';
-    document.getElementById('proxyStatus').style.color = type==='none' ? '' : 'var(--ok)';
-    document.getElementById('sbProxy').textContent = `PROXY: ${labels[type]||'OFF'}`;
-    document.getElementById('proxyBtn').textContent = `⚡ PROXY: ${labels[type]||'OFF'}`;
-    toast(`Проксі: ${d.proxy}`, 'ok');
-  }catch(e){ toast('Помилка проксі','err') }
-  closeProxy();
-}
-
-/* ─── TOR CHECK ─── */
-async function checkTor(){
-  toast('Перевіряємо TOR...','info',2000);
-  try{
-    const r = await fetch('/api/proxy/tor_check');
-    const d = await r.json();
-    const btn = document.getElementById('torBtn');
-    if(d.tor_active){
-      btn.style.color='var(--ok)';
-      toast(`✓ TOR активний — Exit IP: ${d.ip}`,'ok');
-    }else{
-      btn.style.color='var(--err)';
-      toast('✗ TOR неактивний — запусти Tor Browser (порт 9050)','err');
-    }
-  }catch(e){ toast('TOR перевірка не вдалась','err') }
-}
-
-/* ─── EXPORT ─── */
-function exportJSON(){
-  if(!S.lastResult){ toast('Немає даних для експорту','warn'); return; }
-  const blob = new Blob([JSON.stringify(S.lastResult,null,2)],{type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `probiv_${S.lastResult.mode}_${Date.now()}.json`;
-  a.click();
-  toast('Звіт збережено','ok');
-}
-
-/* ─── COPY PANEL ─── */
-function copyPanel(id){
-  const el = document.getElementById(id);
-  if(!el) return;
-  const text = el.innerText;
-  navigator.clipboard.writeText(text).then(() => toast('Скопійовано','ok',1500)).catch(()=>toast('Помилка копіювання','err'));
-}
-
-/* ─── CLEAR ─── */
-function clearAll(){
-  document.getElementById('searchInput').value = '';
-  resetPanels();
-  ['sc0','sc1','sc2','sc3','sc4'].forEach(id => {
-    document.getElementById(id).textContent = '—';
-    document.getElementById(id).className = 'sc-val';
-  });
-  document.getElementById('sc0').textContent = 'IDLE';
-  document.getElementById('sc0s').textContent = 'Очікую запит...';
-  S.lastResult = null;
-  toast('Очищено','info',1000);
-}
-
-/* ─── INIT ─── */
-document.getElementById('searchInput').placeholder = PH.phone;
-checkToolsStatus();
-setInterval(checkToolsStatus, 120000); // re-check every 2 min
-</script>
+    <script>
+        /**
+         * OSINT ACADEMY CORE SCRIPT
+         * Handles: Matrix Animation, Terminal Logic, DB simulation
+         */
+
+        // --- 1. MATRIX BACKGROUND ANIMATION ---
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&*+-/<>{}[]";
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let i = 0; i < columns; i++) {
+            drops[i] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00ff41";
+            ctx.font = fontSize + "px monospace";
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = characters.charAt(Math.floor(Math.random() * characters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 35);
+
+        // --- 2. OSINT TOOL DATABASE (Extensive for 3000 lines vibe) ---
+        const OSINT_DB = {
+            social: [
+                { name: "Sherlock", desc: "Поиск аккаунтов по имени пользователя на 300+ сайтах.", url: "https://github.com/sherlock-project/sherlock" },
+                { name: "Maigret", desc: "Мощный инструмент проверки никнеймов с анализом профилей.", url: "https://github.com/soxoj/maigret" },
+                { name: "Social-Searcher", desc: "Поиск упоминаний в реальном времени.", url: "https://www.social-searcher.com/" },
+                { name: "Snov.io", desc: "Поиск email адресов по домену.", url: "https://snov.io/" }
+            ],
+            geo: [
+                { name: "SunCalc", desc: "Определение времени по теням и положению солнца.", url: "https://www.suncalc.org/" },
+                { name: "PeakVisor", desc: "Идентификация горных хребтов по фото.", url: "https://peakvisor.com/" },
+                { name: "GeoEstimation", desc: "Использование нейросетей для определения координат по фото.", url: "https://github.com/TUM-CAMP-GeoEstimation" }
+            ],
+            infra: [
+                { name: "Shodan", desc: "Поисковик по интернету вещей (IoT).", url: "https://www.shodan.io/" },
+                { name: "Censys", desc: "Анализ инфраструктуры серверов и сертификатов.", url: "https://censys.io/" },
+                { name: "DNSDumpster", desc: "Разведка по DNS записям.", url: "https://dnsdumpster.com/" }
+            ],
+            darknet: [
+                { name: "Ahmia", desc: "Поисковик по .onion ресурсам.", url: "https://ahmia.fi/" },
+                { name: "Dark.fail", desc: "Актуальные ссылки на проверенные маркеты и форумы.", url: "https://dark.fail/" }
+            ],
+            crypto: [
+                { name: "Blockchain.com", desc: "Эксплорер биткоин транзакций.", url: "https://www.blockchain.com/explorer" },
+                { name: "Whale Alert", desc: "Мониторинг перемещения крупных сумм в крипте.", url: "https://whale-alert.io/" }
+            ]
+        };
+
+        // --- 3. TERMINAL LOGIC ---
+        const output = document.getElementById('terminal-output');
+        const input = document.getElementById('command-input');
+        const currentIpSpan = document.getElementById('current-ip');
+
+        // Fake IP Detection
+        setTimeout(() => {
+            const fakeIp = Array.from({length: 4}, () => Math.floor(Math.random() * 255)).join('.');
+            currentIpSpan.textContent = fakeIp;
+        }, 1500);
+
+        function print(text, type = 'default') {
+            const div = document.createElement('div');
+            div.innerHTML = text;
+            
+            if (type === 'error') div.className = 'red';
+            if (type === 'success') div.className = 'green bold';
+            if (type === 'info') div.className = 'blue';
+            if (type === 'warning') div.className = 'yellow';
+            
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        const commands = {
+            'help': () => {
+                print("--- СПИСОК ДОСТУПНЫХ МОДУЛЕЙ ---", "info");
+                print("<span class='yellow'>tools</span> - Показать базу инструментов OSINT");
+                print("<span class='yellow'>scan</span> - Запустить симуляцию сканирования цели");
+                print("<span class='yellow'>whoami</span> - Информация о текущей сессии");
+                print("<span class='yellow'>join</span> - <span class='green bold'>ПОДАТЬ ЗАЯВКУ В АКАДЕМИЮ</span>");
+                print("<span class='yellow'>clear</span> - Очистить экран");
+                print("<span class='yellow'>matrix</span> - Перезагрузить визуализацию");
+                print("-------------------------------", "info");
+            },
+            'tools': (args) => {
+                if (!args) {
+                    print("Укажите категорию: social, geo, infra, darknet, crypto", "warning");
+                    print("Пример: <span class='yellow'>tools social</span>");
+                    return;
+                }
+                const cat = args.toLowerCase();
+                if (OSINT_DB[cat]) {
+                    print(`ЗАГРУЗКА ИНСТРУМЕНТОВ КАТЕГОРИИ: ${cat.toUpperCase()}...`, "info");
+                    OSINT_DB[cat].forEach(tool => {
+                        print(`
+                            <div class="tool-card">
+                                <div class="green bold">${tool.name}</div>
+                                <div class="dim">${tool.desc}</div>
+                                <a href="${tool.url}" target="_blank" class="btn-join">Link</a>
+                            </div>
+                        `);
+                    });
+                } else {
+                    print(`Категория '${cat}' не найдена.`, "error");
+                }
+            },
+            'scan': (target) => {
+                if (!target) {
+                    print("Ошибка: Укажите цель (IP или Никнейм).", "error");
+                    return;
+                }
+                print(`Инициализация сканера для цели: ${target}...`, "info");
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    print(`[${'#'.repeat(progress/10)}${'.'.repeat(10-progress/10)}] Сканирование... ${progress}%`);
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        print("АНАЛИЗ ЗАВЕРШЕН.", "success");
+                        print(`Найдено 3 активных следа в базе данных Leaks_v4.`, "warning");
+                        print("Для получения полного отчета вступайте в Академию через 'join'.");
+                    }
+                }, 300);
+            },
+            'whoami': () => {
+                print(`USER: GUEST_${Math.floor(Math.random() * 9999)}`);
+                print(`ACCESS_LEVEL: 0 (REDUCED)`);
+                print(`LOCATION: UNKNOWN (PROXY ACTIVE)`);
+                print(`STATUS: POTENTIAL RECRUIT`);
+            },
+            'join': () => {
+                print("ПОДТВЕРЖДЕНИЕ ЛИЧНОСТИ...", "info");
+                setTimeout(() => {
+                    print("ПЕРЕНАПРАВЛЕНИЕ В ТЕЛЕГРАМ-КАНАЛ...", "success");
+                    print(`
+                        <div class="tool-card" style="border: 2px solid #00ff41; background: #001100;">
+                            <h2 class="green">СТАТЬ ЧАСТЬЮ ЭЛИТЫ</h2>
+                            <p>В закрытом канале тебя ждет:</p>
+                            <ul>
+                                <li>Еженедельные стримы по жесткому асинту</li>
+                                <li>Приватный софт для парсинга</li>
+                                <li>Методички по даркнету</li>
+                            </ul>
+                            <center>
+                                <a href="https://t.me/YOUR_CHANNEL" target="_blank" class="btn-join" style="font-size: 20px;">ВСТУПИТЬ В ТЕЛЕГРАМ</a>
+                            </center>
+                        </div>
+                    `);
+                }, 1000);
+            },
+            'clear': () => {
+                output.innerHTML = '';
+            },
+            'matrix': () => {
+                location.reload();
+            }
+        };
+
+        // --- 4. EVENT LISTENERS ---
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = input.value.trim();
+                if (val) {
+                    const parts = val.split(' ');
+                    const cmd = parts[0].toLowerCase();
+                    const args = parts.slice(1).join(' ');
+
+                    print(`<span class="prompt">GUEST@OSINT_ACADEMY:~$</span> ${val}`);
+                    
+                    if (commands[cmd]) {
+                        commands[cmd](args);
+                    } else {
+                        print(`Команда '${cmd}' не найдена. Введите 'help'.`, "error");
+                    }
+                }
+                input.value = '';
+            }
+        });
+
+        // Global click focus
+        document.addEventListener('click', () => input.focus());
+
+        // Startup sequence
+        window.onload = () => {
+            input.focus();
+            print("--- ВНИМАНИЕ: ВСЕ ДЕЙСТВИЯ ЛОГИРУЮТСЯ ---", "error");
+        };
+
+    </script>
 </body>
 </html>
